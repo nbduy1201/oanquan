@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minigame Ô ăn quan - Quay về tuổi thơ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pattaya&display=swap" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        :root {
+            --board-color: #8c5a2b; --board-side: #5c3a1b; --cell-color: #c9a06b;
+            --cell-shadow: inset 0 10px 20px rgba(0,0,0,0.6), inset 0 -2px 5px rgba(255,255,255,0.2);
+            --highlight: #ffdd57; --text-color: #4a2e00;
+            --btn-bg: #5c2c16; --btn-border: #2e150a; --btn-hover: #7a3a1a;   
+        }
+
+        body {
+            margin: 0; padding: 0; font-family: 'Pattaya', sans-serif;
+            background-image: url('img_src/Nen.png'); background-size: cover;          
+            background-position: center; background-repeat: no-repeat; background-attachment: fixed;    
+            background-color: #e6d5b8; color: var(--text-color);
+            display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; letter-spacing: 1px;
+            /* Thay đổi trỏ chuột mặc định thành Bantay1.png */
+            cursor: url('img_src/Bantay1.png'), auto;
+        }
+
+        /* --- HIỆU ỨNG CHUYỂN MÀN HÌNH --- */
+        .screen { display: none; text-align: center; flex-direction: column; align-items: center; width: 100%; max-width: 900px; }
+        .screen.active { 
+            display: flex; 
+            animation: fadeInScreen 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        @keyframes fadeInScreen {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 { font-size: 4rem; color: #5c2c16; text-shadow: -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff, 4px 6px 10px rgba(0,0,0,0.6); margin-bottom: 20px; font-weight: bold; }
+
+        /* --- ĐỒNG BỘ NÚT BẤM VÀ HIỆU ỨNG --- */
+        button {
+            background-color: var(--btn-bg); color: #fff; border: 2px solid var(--btn-border); border-radius: 8px;
+            padding: 12px 20px; margin: 10px; font-size: 1.5rem; font-family: 'Pattaya', sans-serif; 
+            /* Cập nhật trỏ chuột khi hover vào nút */
+            cursor: url('img_src/Bantay1.png'), pointer !important; 
+            transition: all 0.2s ease-out;
+            box-shadow: 0 5px 0px var(--btn-border), 0 10px 20px rgba(0,0,0,0.6); text-shadow: 1px 1px 2px #000;
+            width: 100%; max-width: 280px; box-sizing: border-box;
+        }
+        button:hover { 
+            background-color: var(--btn-hover); 
+            transform: translateY(2px); 
+            box-shadow: 0 3px 0px var(--btn-border), 0 6px 12px rgba(0,0,0,0.6); 
+        }
+        button:active {
+            transform: translateY(5px) scale(0.98); 
+            box-shadow: 0 0px 0px var(--btn-border), 0 2px 5px rgba(0,0,0,0.6); 
+        }
+
+        .top-bar button { width: auto; max-width: none; margin: 0; padding: 8px 20px; font-size: 1.2rem; }
+
+        .input-group { margin: 15px 0; display: flex; justify-content: center;}
+        input {
+            padding: 12px; font-size: 1.5rem; border-radius: 8px;
+            border: 3px solid var(--board-side); text-align: center; font-family: 'Pattaya', sans-serif;
+            width: 100%; max-width: 250px; outline: none; background: #fff8eb; letter-spacing: 2px;
+            box-sizing: border-box; transition: border-color 0.3s;
+        }
+        input:focus { border-color: #2e7d32; }
+        input::placeholder { color: #a1887f; font-size: 1.2rem; letter-spacing: 0px; }
+
+        .lobby-box, #waiting-room { 
+            background: rgba(255, 248, 235, 0.95); border: 4px solid var(--board-side); border-radius: 20px; 
+            padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 500px;
+            box-sizing: border-box; display: flex; flex-direction: column; align-items: center;
+        }
+        
+        #waiting-room { display: none; z-index: 20; animation: popIn 0.4s ease-out; }
+        
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
+
+        .room-code-display { font-size: 4rem; color: #d32f2f; letter-spacing: 10px; font-weight: bold; margin: 10px 0; text-shadow: 2px 2px 0px #fff; }
+
+        .game-container { display: flex; flex-direction: column; align-items: center; width: 100%; perspective: 1200px; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 10px 20px; box-sizing: border-box; z-index: 10; }
+        .score-board { font-size: 1.8rem; background: rgba(255, 248, 235, 0.9); padding: 5px 25px; border-radius: 20px; border: 2px solid var(--board-side); box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .p-name { font-weight: bold; color: #d32f2f; }
+
+        #turn-indicator { text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 2px 3px 5px rgba(0,0,0,0.4); }
+
+        .board-wrapper { transform: rotateX(40deg); transform-style: preserve-3d; margin-top: -10px; }
+        .board { display: flex; align-items: center; justify-content: center; background-color: var(--board-color); padding: 20px; border-radius: 80px; border: 5px solid #4a2e00; box-shadow: 0 20px 0 var(--board-side), 0 35px 20px rgba(0,0,0,0.5); position: relative; }
+        .quan-cell { width: 120px; height: 200px; background-color: var(--cell-color); border-radius: 60px; border: 3px solid #5a3a1b; box-shadow: var(--cell-shadow); position: relative; margin: 0 15px; display: flex; justify-content: center; align-items: center; }
+        .dan-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        
+        .dan-cell { 
+            width: 90px; height: 90px; background-color: var(--cell-color); border: 3px solid #5a3a1b; 
+            box-shadow: var(--cell-shadow); position: relative; 
+            transition: box-shadow 0.3s; 
+            /* Cập nhật trỏ chuột Bantay1 khi hover ô dân */
+            cursor: url('img_src/Bantay1.png'), pointer;
+        }
+        
+        .dan-cell:hover { box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.4), var(--cell-shadow); }
+        .cell-active { box-shadow: 0 0 15px 5px var(--highlight), inset 0 10px 20px rgba(0,0,0,0.6) !important; border-color: var(--highlight); }
+
+        .stone-dan { width: 14px; height: 12px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #e0e0e0, #7a7a7a); box-shadow: 2px 3px 4px rgba(0,0,0,0.6); position: absolute; transform: translate(-50%, -50%); pointer-events: none; }
+        .stone-dan:nth-child(even) { background: radial-gradient(circle at 30% 30%, #b8b8b8, #4d4d4d); }
+        .stone-dan:nth-child(3n) { background: radial-gradient(circle at 30% 30%, #d4c0a3, #6b5c47); }
+        .stone-quan { width: 45px; height: 35px; border-radius: 40% 60% 55% 45% / 50% 55% 45% 50%; background: radial-gradient(circle at 30% 20%, #f5f5f5, #808080, #333); box-shadow: 3px 5px 8px rgba(0,0,0,0.7); position: absolute; transform: translate(-50%, -50%); pointer-events: none; }
+        .count-badge { position: absolute; bottom: -15px; right: -10px; background: rgba(74, 46, 0, 0.85); color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 1.1rem; transform: translateZ(20px); pointer-events: none; border: 1px solid #dcb881; }
+
+        .arrows { position: absolute; top: -50px; left: 50%; transform: translateX(-50%) translateZ(40px) rotateX(-40deg); display: flex; gap: 20px; z-index: 30; }
+        
+        .arrow-btn { 
+            background: var(--highlight); color: #000; border: 2px solid #5a3a1b; font-family: sans-serif; 
+            border-radius: 50%; width: 40px; height: 40px; font-size: 1.2rem; 
+            box-shadow: 0 4px 0px #5a3a1b; display: flex; justify-content: center; align-items: center; 
+            padding: 0; transition: all 0.2s; 
+            /* Cập nhật trỏ chuột Bantay1 khi hover mũi tên */
+            cursor: url('img_src/Bantay1.png'), pointer;
+        }
+        
+        .arrow-btn:hover { background: #ffea75; transform: scale(1.1); box-shadow: 0 2px 0px #5a3a1b; }
+        
+        /* --- HIỆU ỨNG TAY RẢI QUÂN BẰNG HÌNH ẢNH (Bantay2.png) --- */
+        #hand-cursor { 
+            position: absolute; 
+            width: 100px; height: 100px; /* Kích thước khung bàn tay rải */
+            background-image: url('img_src/Bantay2.png');
+            background-size: contain; 
+            background-repeat: no-repeat; 
+            background-position: center;
+            pointer-events: none; 
+            transition: all 0.5s ease-in-out; 
+            display: none; z-index: 50; 
+            filter: drop-shadow(0 15px 8px rgba(0,0,0,0.6)); 
+        }
+
+        .score-anim { position: absolute; color: #d32f2f; font-size: 3rem; text-shadow: 2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff; animation: floatUp 1.5s forwards; pointer-events: none; z-index: 60; }
+        @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-100px) scale(1.5); opacity: 0; } }
+        
+        #options-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+        #options-modal h2 { color: #ffdd57; font-size: 3rem; margin-bottom: 20px;}
+        #options-modal button { width: 100%; max-width: 250px; margin: 10px 0; }
+
+        /* Difficulty Modal */
+        #difficulty-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 200; }
+        #difficulty-modal .diff-box { background: rgba(255, 248, 235, 0.97); border: 4px solid var(--board-side); border-radius: 20px; padding: 40px 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); text-align: center; animation: popIn 0.3s ease-out;}
+        #difficulty-modal h2 { color: #5c2c16; font-size: 2.5rem; margin-bottom: 10px; }
+        #difficulty-modal p { color: #8c5a2b; font-size: 1.1rem; margin-bottom: 25px; }
+        #difficulty-modal button { margin: 8px 0; }
+        .diff-btn-easy   { background-color: #2e7d32 !important; border-color: #1b5e20 !important; }
+        .diff-btn-medium { background-color: #e65100 !important; border-color: #bf360c !important; }
+        .diff-btn-hard   { background-color: #b71c1c !important; border-color: #7f0000 !important; }
+        .diff-btn-easy:hover   { background-color: #388e3c !important; }
+        .diff-btn-medium:hover { background-color: #f57c00 !important; }
+        .diff-btn-hard:hover   { background-color: #c62828 !important; }
+        .diff-badge { display: inline-block; font-size: 0.85rem; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 2px 10px; margin-left: 8px; vertical-align: middle; }
+
+        /* Win Modal */
+        #win-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 300; }
+        #fireworks-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 299; }
+        .win-box { background: linear-gradient(135deg, #fff8eb 0%, #ffe0b2 100%); border: 5px solid #5c2c16; border-radius: 24px; padding: 40px 60px; box-shadow: 0 0 60px rgba(255,180,0,0.6), 0 15px 40px rgba(0,0,0,0.7); text-align: center; z-index: 301; animation: winPop 0.5s cubic-bezier(0.175,0.885,0.32,1.275) both; max-width: 480px; width: 90%; }
+        @keyframes winPop { 0% { transform: scale(0.3); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .win-trophy { font-size: 5rem; animation: trophyBounce 0.8s ease infinite alternate; display: block; margin-bottom: 5px; }
+        @keyframes trophyBounce { 0% { transform: translateY(0) rotate(-5deg); } 100% { transform: translateY(-12px) rotate(5deg); } }
+        .win-title { font-size: 2.8rem; color: #5c2c16; margin: 10px 0 5px; text-shadow: 2px 2px 0 #fff, -1px -1px 0 #fff; }
+        .win-subtitle { font-size: 1.3rem; color: #8c5a2b; margin-bottom: 20px; }
+        .win-scores { display: flex; justify-content: center; gap: 30px; margin: 15px 0 25px; }
+        .win-score-card { background: rgba(92,44,22,0.1); border: 2px solid #8c5a2b; border-radius: 14px; padding: 12px 24px; }
+        .win-score-card .wsname { font-size: 1.1rem; color: #5c2c16; }
+        .win-score-card .wsval { font-size: 2.5rem; color: #d32f2f; font-weight: bold; }
+        .win-score-card.winner { background: rgba(255,215,0,0.25); border-color: #f9a825; box-shadow: 0 0 15px rgba(255,200,0,0.4); }
+        .win-btn-row { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .win-btn-row button { width: auto; font-size: 1.2rem; padding: 10px 20px; }
+    </style>
+</head>
+<body>
+    <div id="main-menu" class="screen active">
+        <h1>Ô ăn quan</h1>
+        <button onclick="showDifficultyModal()">Chơi với máy</button>
+        <button onclick="startMultiplayer()">Chơi với bạn</button>
+        <button onclick="alert('Tính năng đang phát triển!')">Tập chơi</button>
+    </div>
+
+    <div id="multiplayer-menu" class="screen">
+        <h1>Phòng chơi</h1>
+        <div class="lobby-box" id="setup-room">
+            <div class="input-group">
+                <input type="text" id="player-name" placeholder="Nhập tên của bạn" maxlength="10">
+            </div>
+            
+            <div style="border-top: 2px dashed #8c5a2b; margin: 15px 0; padding-top: 15px; width: 100%;">
+                <button onclick="createRoom()">Tạo phòng mới</button>
+            </div>
+            
+            <div style="border-top: 2px dashed #8c5a2b; margin: 15px 0; padding-top: 15px; width: 100%;">
+                <input type="text" id="room-input" placeholder="Mã PIN 4 số" maxlength="4" style="width: 180px; margin-bottom: 10px;">
+                <br>
+                <button onclick="joinRoom()" style="background-color: #2e7d32; border-color: #1b5e20;">Vào Phòng</button>
+            </div>
+            <button onclick="window.location.reload()" style="background-color: #555; margin-top: 10px;">Quay về</button>
+        </div>
+        
+        <div id="waiting-room">
+            <h2>Mã phòng của bạn:</h2>
+            <div class="room-code-display" id="display-room-code">1234</div>
+            <p>Hãy đọc mã này cho bạn bè nhập vào nhé!</p>
+            <p style="margin-bottom: 20px;">Đang chờ đối thủ...</p>
+            <button onclick="window.location.reload()" style="background-color: #555;">Huỷ phòng</button>
+        </div>
+        
+        <h2 id="room-status" style="color: #d32f2f; margin-top: 20px; text-shadow: 1px 1px 0 #fff;"></h2>
+    </div>
+
+    <div id="difficulty-modal">
+        <div class="diff-box">
+            <h2>Chọn mức độ</h2>
+            <p>Bạn muốn thử sức với máy ở mức nào?</p>
+            <div>
+                <button class="diff-btn-easy" onclick="startOfflineGame('easy')">Dễ <span class="diff-badge">Ngẫu nhiên</span></button>
+            </div>
+            <div>
+                <button class="diff-btn-medium" onclick="startOfflineGame('medium')">Trung bình <span class="diff-badge">Chiến thuật</span></button>
+            </div>
+            <div>
+                <button class="diff-btn-hard" onclick="startOfflineGame('hard')">Khó <span class="diff-badge">Tính trước</span></button>
+            </div>
+            <div style="margin-top: 15px;">
+                <button onclick="hideDifficultyModal()" style="background-color:#555;">Huỷ</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <div class="game-container">
+            <div class="top-bar">
+                <button onclick="backToMainMenu()">Thoát</button>
+                <div class="score-board">
+                    <span id="name-p2" class="p-name">Khách</span>: <span id="score-p2">0</span> 
+                    &nbsp;|&nbsp; 
+                    <span id="name-p1" class="p-name">Chủ</span>: <span id="score-p1">0</span>
+                </div>
+                <button onclick="openOptions()">Tuỳ chọn</button>
+            </div>
+
+            <h2 id="turn-indicator" style="margin-top: 0; font-size: 2rem;">Lượt của bạn!</h2>
+
+            <div class="board-wrapper">
+                <div class="board" id="board-ui">
+                    <div class="quan-cell" id="pit-0"></div>
+                    <div>
+                        <div class="dan-grid" style="margin-bottom: 8px;">
+                            <div class="dan-cell" id="pit-1" onclick="selectPit(1)"></div>
+                            <div class="dan-cell" id="pit-2" onclick="selectPit(2)"></div>
+                            <div class="dan-cell" id="pit-3" onclick="selectPit(3)"></div>
+                            <div class="dan-cell" id="pit-4" onclick="selectPit(4)"></div>
+                            <div class="dan-cell" id="pit-5" onclick="selectPit(5)"></div>
+                        </div>
+                        <div class="dan-grid">
+                            <div class="dan-cell" id="pit-11" onclick="selectPit(11)"></div>
+                            <div class="dan-cell" id="pit-10" onclick="selectPit(10)"></div>
+                            <div class="dan-cell" id="pit-9" onclick="selectPit(9)"></div>
+                            <div class="dan-cell" id="pit-8" onclick="selectPit(8)"></div>
+                            <div class="dan-cell" id="pit-7" onclick="selectPit(7)"></div>
+                        </div>
+                    </div>
+                    <div class="quan-cell" id="pit-6"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="hand-cursor"></div>
+
+        <div id="options-modal">
+            <h2>Tạm dừng</h2>
+            <button onclick="closeOptions()">Tiếp tục</button>
+            <button onclick="backToMainMenu()" style="background-color: #b71c1c; border-color: #7f0000;">Thoát Game</button>
+        </div>
+    </div>
+
+    <canvas id="fireworks-canvas"></canvas>
+
+    <div id="win-modal">
+        <div class="win-box">
+            <span class="win-trophy" id="win-trophy">🏆</span>
+            <div class="win-title" id="win-title">CHIẾN THẮNG!</div>
+            <div class="win-subtitle" id="win-subtitle">Xuất sắc lắm!</div>
+            <div class="win-scores">
+                <div class="win-score-card" id="wcard-p1">
+                    <div class="wsname" id="wname-p1">Bạn</div>
+                    <div class="wsval" id="wval-p1">0</div>
+                </div>
+                <div class="win-score-card" id="wcard-p2">
+                    <div class="wsname" id="wname-p2">Máy</div>
+                    <div class="wsval" id="wval-p2">0</div>
+                </div>
+            </div>
+            <div class="win-btn-row">
+                <button onclick="backToMainMenu()" style="background:#2e7d32; border-color:#1b5e20;">🏠 Menu</button>
+                <button onclick="restartGame()">🔄 Chơi lại</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // SOUND ENGINE (Web Audio API – không cần file âm thanh)
+        // ============================================================
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+        function getAudioCtx() {
+            if (!audioCtx) audioCtx = new AudioCtx();
+            return audioCtx;
+        }
+
+        function playDropSound() {
+            try {
+                const ctx = getAudioCtx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.type = 'sine';
+                const baseFreq = 380 + Math.random() * 180;
+                osc.frequency.setValueAtTime(baseFreq, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.6, ctx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.25, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+                osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.12);
+            } catch(e) {}
+        }
+
+        function playCaptureSound() {
+            try {
+                const ctx = getAudioCtx();
+                for (let i = 0; i < 3; i++) {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain); gain.connect(ctx.destination);
+                    osc.type = 'triangle';
+                    const t = ctx.currentTime + i * 0.07;
+                    osc.frequency.setValueAtTime(600 - i * 80, t);
+                    osc.frequency.exponentialRampToValueAtTime(200, t + 0.15);
+                    gain.gain.setValueAtTime(0.3, t);
+                    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+                    osc.start(t); osc.stop(t + 0.2);
+                }
+            } catch(e) {}
+        }
+
+        function playWinSound() {
+            try {
+                const ctx = getAudioCtx();
+                const melody = [523, 659, 784, 1047];
+                melody.forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain); gain.connect(ctx.destination);
+                    osc.type = 'square';
+                    const t = ctx.currentTime + i * 0.18;
+                    osc.frequency.setValueAtTime(freq, t);
+                    gain.gain.setValueAtTime(0.2, t);
+                    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+                    osc.start(t); osc.stop(t + 0.4);
+                });
+            } catch(e) {}
+        }
+
+        function playLoseSound() {
+            try {
+                const ctx = getAudioCtx();
+                const melody = [400, 330, 260];
+                melody.forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain); gain.connect(ctx.destination);
+                    osc.type = 'sawtooth';
+                    const t = ctx.currentTime + i * 0.2;
+                    osc.frequency.setValueAtTime(freq, t);
+                    gain.gain.setValueAtTime(0.15, t);
+                    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+                    osc.start(t); osc.stop(t + 0.4);
+                });
+            } catch(e) {}
+        }
+
+        // ============================================================
+        // FIREWORKS ENGINE
+        // ============================================================
+        const fwCanvas = document.getElementById('fireworks-canvas');
+        const fwCtx = fwCanvas.getContext('2d');
+        let fwParticles = [];
+        let fwAnimId = null;
+
+        function resizeFwCanvas() {
+            fwCanvas.width = window.innerWidth;
+            fwCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeFwCanvas);
+        resizeFwCanvas();
+
+        function launchFirework() {
+            const x = Math.random() * fwCanvas.width;
+            const y = Math.random() * fwCanvas.height * 0.55;
+            const colors = ['#ff4e4e','#ffdd57','#48c774','#3273dc','#ff69b4','#ff9f43','#a29bfe','#fd79a8'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const count = 60 + Math.floor(Math.random() * 40);
+            for (let i = 0; i < count; i++) {
+                const angle = (Math.PI * 2 / count) * i;
+                const speed = 2 + Math.random() * 5;
+                fwParticles.push({
+                    x, y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    alpha: 1, color, radius: 2 + Math.random() * 2.5,
+                    decay: 0.012 + Math.random() * 0.01, gravity: 0.08
+                });
+            }
+        }
+
+        function animateFireworks() {
+            fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+            fwParticles = fwParticles.filter(p => p.alpha > 0.02);
+            fwParticles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                p.vy += p.gravity;
+                p.vx *= 0.98; p.vy *= 0.98;
+                p.alpha -= p.decay;
+                fwCtx.save();
+                fwCtx.globalAlpha = Math.max(0, p.alpha);
+                fwCtx.beginPath();
+                fwCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                fwCtx.fillStyle = p.color;
+                fwCtx.shadowBlur = 8; fwCtx.shadowColor = p.color;
+                fwCtx.fill();
+                fwCtx.restore();
+            });
+            fwAnimId = requestAnimationFrame(animateFireworks);
+        }
+
+        let fwIntervalId = null;
+        function startFireworks() {
+            fwCanvas.style.display = 'block';
+            animateFireworks();
+            launchFirework();
+            fwIntervalId = setInterval(launchFirework, 500);
+        }
+
+        function stopFireworks() {
+            clearInterval(fwIntervalId); fwIntervalId = null;
+            if (fwAnimId) { cancelAnimationFrame(fwAnimId); fwAnimId = null; }
+            fwParticles = [];
+            fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+            fwCanvas.style.display = 'none';
+        }
+
+        // ============================================================
+        // WIN MODAL
+        // ============================================================
+        function showWinModal(result) {
+            const modal = document.getElementById('win-modal');
+            const trophy = document.getElementById('win-trophy');
+            const title  = document.getElementById('win-title');
+            const sub    = document.getElementById('win-subtitle');
+            const wc1    = document.getElementById('wcard-p1');
+            const wc2    = document.getElementById('wcard-p2');
+
+            document.getElementById('wname-p1').innerText = names.p1;
+            document.getElementById('wname-p2').innerText = names.p2;
+            document.getElementById('wval-p1').innerText  = scores.p1;
+            document.getElementById('wval-p2').innerText  = scores.p2;
+            wc1.classList.remove('winner'); wc2.classList.remove('winner');
+
+            if (result === 'win') {
+                trophy.innerText = '🏆'; title.innerText = 'CHIẾN THẮNG!';
+                sub.innerText = 'Xuất sắc lắm! Bạn đã thắng!';
+                if (gameMode === 'online') {
+                    if (myRole === 'p1') wc1.classList.add('winner'); else wc2.classList.add('winner');
+                } else { wc1.classList.add('winner'); }
+                playWinSound(); startFireworks();
+            } else if (result === 'lose') {
+                trophy.innerText = '😢'; title.innerText = 'THUA RỒI!';
+                sub.innerText = 'Đáng tiếc! Hãy thử lại nhé!';
+                if (gameMode === 'online') {
+                    if (myRole === 'p2') wc1.classList.add('winner'); else wc2.classList.add('winner');
+                } else { wc2.classList.add('winner'); }
+                playLoseSound();
+            } else {
+                trophy.innerText = '🤝'; title.innerText = 'HÒA NHAU!';
+                sub.innerText = 'Hai bên ngang tài ngang sức!';
+                playWinSound();
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function hideWinModal() {
+            document.getElementById('win-modal').style.display = 'none';
+            stopFireworks();
+        }
+
+        function restartGame() {
+            hideWinModal();
+            startGame(gameMode);
+        }
+
+        const socket = typeof io !== 'undefined' ? io() : null;
+        let gameMode = 'offline'; 
+        let myRole = 'p1'; 
+        let currentRoom = '';
+        let names = { p1: "Bạn", p2: "Máy" };
+        let botDifficulty = 'easy';
+
+        function showDifficultyModal() { document.getElementById('difficulty-modal').style.display = 'flex'; }
+        function hideDifficultyModal() { document.getElementById('difficulty-modal').style.display = 'none'; }
+        function startOfflineGame(difficulty) {
+            botDifficulty = difficulty;
+            hideDifficultyModal();
+            startGame('offline');
+        }
+
+        let board = [];
+        let scores = { p1: 0, p2: 0 }; 
+        let currentPlayer = 'p1'; 
+        let isAnimating = false;
+        let isPaused = false;
+        let currentMoveId = 0; 
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        // --- SOCKET.IO ---
+        function startMultiplayer() {
+            if (!socket) return alert("Không tìm thấy server. Hãy chạy file start.bat!");
+            showScreen('multiplayer-menu');
+        }
+
+        function createRoom() {
+            const pName = document.getElementById('player-name').value.trim() || "Chủ phòng";
+            socket.emit('createRoom', pName);
+        }
+
+        function joinRoom() {
+            const code = document.getElementById('room-input').value.trim();
+            const pName = document.getElementById('player-name').value.trim() || "Khách";
+            if(code.length !== 4) return alert("Mã PIN phải gồm 4 số!");
+            socket.emit('joinRoom', { code: code, name: pName });
+            document.getElementById('room-status').innerText = "Đang kết nối...";
+        }
+
+        if(socket) {
+            socket.on('roomCreated', (code) => {
+                currentRoom = code; myRole = 'p1';
+                document.getElementById('setup-room').style.display = 'none';
+                document.getElementById('waiting-room').style.display = 'flex';
+                document.getElementById('display-room-code').innerText = code;
+            });
+
+            socket.on('roomJoined', (role) => {
+                currentRoom = document.getElementById('room-input').value.trim();
+                myRole = role; 
+            });
+
+            socket.on('roomError', (msg) => { document.getElementById('room-status').innerText = msg; });
+
+            socket.on('gameStart', (data) => {
+                names.p1 = data.p1Name;
+                names.p2 = data.p2Name;
+                document.getElementById('name-p1').innerText = names.p1;
+                document.getElementById('name-p2').innerText = names.p2;
+                alert(`Đã kết nối! Bạn là: ${myRole === 'p1' ? names.p1 + ' (DƯỚI)' : names.p2 + ' (TRÊN)'}`);
+                startGame('online');
+            });
+
+            socket.on('receiveMove', (data) => { startMove(data.index, data.direction); });
+            socket.on('opponentDisconnected', () => {
+                if (gameMode === 'online') { alert("Đối thủ đã thoát!"); window.location.reload(); }
+            });
+        }
+
+        // --- GAME LOGIC ---
+        function startGame(mode) {
+            currentMoveId++; 
+            gameMode = mode;
+            scores = { p1: 0, p2: 0 }; currentPlayer = 'p1';
+            isAnimating = false; isPaused = false; 
+            document.getElementById('hand-cursor').style.display = 'none';
+            
+            if(mode === 'offline') {
+                names.p1 = "Bạn"; names.p2 = "Máy";
+                document.getElementById('name-p1').innerText = names.p1;
+                document.getElementById('name-p2').innerText = names.p2;
+            }
+
+            board = [
+                { quan: 1, dan: 0 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, 
+                { quan: 1, dan: 0 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }  
+            ];
+            
+            for (let i = 0; i < 12; i++) document.getElementById(`pit-${i}`).innerHTML = '';
+            updateBoardUI(); closeOptions(); showScreen('game-screen'); updateTurnIndicator();
+        }
+
+        function updateBoardUI() {
+            document.getElementById('score-p1').innerText = scores.p1;
+            document.getElementById('score-p2').innerText = scores.p2;
+
+            for (let i = 0; i < 12; i++) {
+                const cell = document.getElementById(`pit-${i}`);
+                const isQuanPit = (i === 0 || i === 6);
+                cell.classList.remove('cell-active');
+                const oldArrows = cell.querySelector('.arrows'); if (oldArrows) oldArrows.remove();
+
+                let quanEl = cell.querySelector('.stone-quan');
+                if (board[i].quan > 0) {
+                    if (!quanEl) { quanEl = document.createElement('div'); quanEl.className = 'stone-quan'; quanEl.style.left = '50%'; quanEl.style.top = '50%'; cell.appendChild(quanEl); }
+                } else if (quanEl) quanEl.remove();
+                
+                let existingDan = cell.querySelectorAll('.stone-dan');
+                let targetDan = board[i].dan;
+
+                if (existingDan.length < targetDan) {
+                    for(let j = existingDan.length; j < targetDan; j++) {
+                        const danEl = document.createElement('div'); danEl.className = 'stone-dan';
+                        const x = 20 + Math.random() * ((isQuanPit?120:90) - 40); const y = 20 + Math.random() * ((isQuanPit?200:90) - 40);
+                        danEl.style.left = `${x}px`; danEl.style.top = `${y}px`;
+                        danEl.style.transform = `translate(-50%, -50%) rotate(${Math.random()*360}deg)`; cell.appendChild(danEl);
+                    }
+                } else if (existingDan.length > targetDan) {
+                    for(let j = existingDan.length - 1; j >= targetDan; j--) existingDan[j].remove();
+                }
+                
+                let countBadge = cell.querySelector('.count-badge');
+                let totalValue = board[i].dan + (board[i].quan * 10);
+                if (totalValue > 0) {
+                    if (!countBadge) { countBadge = document.createElement('div'); countBadge.className = 'count-badge'; cell.appendChild(countBadge); }
+                    countBadge.innerText = totalValue; cell.appendChild(countBadge); 
+                } else if (countBadge) countBadge.remove();
+            }
+        }
+
+        function selectPit(index) {
+            if (isAnimating || isPaused) return;
+            if (gameMode === 'online') {
+                if (currentPlayer !== myRole) return; 
+                if (myRole === 'p1' && (index < 7 || index > 11)) return;
+                if (myRole === 'p2' && (index < 1 || index > 5)) return;
+            } else {
+                if (currentPlayer !== 'p1') return; 
+                if (index < 7 || index > 11) return;
+            }
+
+            if (board[index].dan > 0) {
+                updateBoardUI(); 
+                const cell = document.getElementById(`pit-${index}`); cell.classList.add('cell-active');
+                const arrows = document.createElement('div'); arrows.className = 'arrows';
+                const isTopRow = (gameMode === 'online' && myRole === 'p2');
+                arrows.innerHTML = isTopRow
+                    ? `<button class="arrow-btn" onclick="handlePlayerMove(${index}, -1); event.stopPropagation();">◀</button>
+                       <button class="arrow-btn" onclick="handlePlayerMove(${index}, 1); event.stopPropagation();">▶</button>`
+                    : `<button class="arrow-btn" onclick="handlePlayerMove(${index}, 1); event.stopPropagation();">◀</button>
+                       <button class="arrow-btn" onclick="handlePlayerMove(${index}, -1); event.stopPropagation();">▶</button>`;
+                cell.appendChild(arrows);
+            }
+        }
+
+        function handlePlayerMove(index, direction) {
+            if (gameMode === 'online') socket.emit('makeMove', { roomCode: currentRoom, index: index, direction: direction });
+            startMove(index, direction);
+        }
+
+        async function checkPauseAndCancel(moveId) {
+            while (isPaused) { if (moveId !== currentMoveId) return true; await sleep(100); }
+            return moveId !== currentMoveId;
+        }
+
+        async function startMove(startIndex, direction) {
+            if(isAnimating || isPaused) return;
+            isAnimating = true; currentMoveId++; let myMoveId = currentMoveId; 
+            updateBoardUI(); 
+            const hand = document.getElementById('hand-cursor'); hand.style.display = 'block';
+
+            async function dropStones(count, currentIndex) {
+                let curr = currentIndex;
+                while (count > 0) {
+                    if (await checkPauseAndCancel(myMoveId)) return null; 
+                    curr = (curr + direction + 12) % 12;
+                    await moveHandTo(curr);
+                    if (await checkPauseAndCancel(myMoveId)) return null; 
+                    board[curr].dan++; count--; playDropSound(); updateBoardUI(); await sleep(550); 
+                }
+                return curr; 
+            }
+
+            async function handlePostDrop(lastIndex) {
+                if (lastIndex === null || await checkPauseAndCancel(myMoveId)) return;
+                let nextIndex = (lastIndex + direction + 12) % 12;
+
+                if (nextIndex === 0 || nextIndex === 6) return; 
+                if (board[nextIndex].dan > 0) {
+                    let nextStones = board[nextIndex].dan; board[nextIndex].dan = 0;
+                    document.getElementById(`pit-${nextIndex}`).classList.add('cell-active'); updateBoardUI();
+                    await moveHandTo(nextIndex); if (await checkPauseAndCancel(myMoveId)) return; await sleep(600); 
+                    let newLastIndex = await dropStones(nextStones, nextIndex); await handlePostDrop(newLastIndex); 
+                    return;
+                }
+                if (board[nextIndex].dan === 0) {
+                    let targetIndex = (nextIndex + direction + 12) % 12;
+                    while ((board[targetIndex].dan > 0 || board[targetIndex].quan > 0) && board[nextIndex].dan === 0) {
+                        if (await checkPauseAndCancel(myMoveId)) return;
+                        let capturedDan = board[targetIndex].dan; let capturedQuan = board[targetIndex].quan;
+                        board[targetIndex].dan = 0; board[targetIndex].quan = 0;
+                        let points = capturedDan + (capturedQuan * 10);
+                        if (currentPlayer === 'p1') scores.p1 += points; else scores.p2 += points;
+                        await moveHandTo(targetIndex); playCaptureSound(); showScoreEffect(targetIndex, points); updateBoardUI(); await sleep(800); 
+                        nextIndex = (targetIndex + direction + 12) % 12; targetIndex = (nextIndex + direction + 12) % 12;
+                    }
+                }
+            }
+
+            let initialPieces = board[startIndex].dan; board[startIndex].dan = 0; updateBoardUI();
+            await moveHandTo(startIndex); await sleep(400);
+            let lastDropIndex = await dropStones(initialPieces, startIndex); await handlePostDrop(lastDropIndex);
+            if (myMoveId !== currentMoveId) return;
+
+            hand.style.display = 'none'; checkWinCondition();
+            currentPlayer = currentPlayer === 'p1' ? 'p2' : 'p1'; updateTurnIndicator(); isAnimating = false;
+            
+            if (gameMode === 'offline' && currentPlayer === 'p2') setTimeout(botMove, 1500);
+        }
+
+        function botMove() {
+            if (gameMode === 'online' || currentPlayer !== 'p2' || isAnimating || isPaused) return;
+            let validPits = [1, 2, 3, 4, 5].filter(i => board[i].dan > 0);
+            if (validPits.length === 0) { currentPlayer = 'p1'; updateTurnIndicator(); return; }
+
+            let chosenPit, chosenDir;
+
+            if (botDifficulty === 'easy') {
+                chosenPit = validPits[Math.floor(Math.random() * validPits.length)];
+                chosenDir = Math.random() > 0.5 ? 1 : -1;
+            } else if (botDifficulty === 'medium') {
+                let bestScore = -1; chosenPit = validPits[0]; chosenDir = 1;
+                for (let pit of validPits) {
+                    for (let dir of [1, -1]) {
+                        let simScore = simulateScore(pit, dir);
+                        if (simScore > bestScore) { bestScore = simScore; chosenPit = pit; chosenDir = dir; }
+                    }
+                }
+                if (bestScore === 0 && Math.random() < 0.5) {
+                    chosenPit = validPits[Math.floor(Math.random() * validPits.length)];
+                    chosenDir = Math.random() > 0.5 ? 1 : -1;
+                }
+            } else {
+                let bestScore = -Infinity; chosenPit = validPits[0]; chosenDir = 1;
+                for (let pit of validPits) {
+                    for (let dir of [1, -1]) {
+                        let simScore = simulateScore(pit, dir);
+                        if (simScore > bestScore) { bestScore = simScore; chosenPit = pit; chosenDir = dir; }
+                    }
+                }
+            }
+
+            document.getElementById(`pit-${chosenPit}`).classList.add('cell-active');
+            setTimeout(() => { startMove(chosenPit, chosenDir); }, 800);
+        }
+
+        function simulateScore(startIndex, direction) {
+            let b = board.map(c => ({ dan: c.dan, quan: c.quan }));
+            let count = b[startIndex].dan; b[startIndex].dan = 0;
+            let curr = startIndex;
+            while (count > 0) { curr = (curr + direction + 12) % 12; b[curr].dan++; count--; }
+            let earned = 0;
+            let next = (curr + direction + 12) % 12;
+            while (next !== 0 && next !== 6 && b[next].dan === 0) {
+                let target = (next + direction + 12) % 12;
+                if (b[target].dan > 0 || b[target].quan > 0) {
+                    earned += b[target].dan + b[target].quan * 10;
+                    b[target].dan = 0; b[target].quan = 0;
+                    next = (target + direction + 12) % 12;
+                } else break;
+            }
+            return earned;
+        }
+
+        function moveHandTo(index) {
+            return new Promise(resolve => {
+                const hand = document.getElementById('hand-cursor');
+                const targetCell = document.getElementById(`pit-${index}`);
+                const rect = targetCell.getBoundingClientRect();
+                hand.style.top = `${rect.top + window.scrollY - 25}px`; hand.style.left = `${rect.left + window.scrollX + (rect.width/2) - 20}px`;
+                setTimeout(resolve, 500); 
+            });
+        }
+
+        function showScoreEffect(index, amount) {
+            const cell = document.getElementById(`pit-${index}`); const rect = cell.getBoundingClientRect();
+            const anim = document.createElement('div'); anim.className = 'score-anim'; anim.innerText = `+${amount}`;
+            anim.style.top = `${rect.top + window.scrollY - 20}px`; anim.style.left = `${rect.left + window.scrollX + 20}px`;
+            document.body.appendChild(anim); setTimeout(() => anim.remove(), 1500);
+        }
+
+        function checkWinCondition() {
+            if(board[0].quan === 0 && board[0].dan === 0 && board[6].quan === 0 && board[6].dan === 0) {
+                setTimeout(() => {
+                    let result;
+                    if (gameMode === 'online') {
+                        const myScore = myRole === 'p1' ? scores.p1 : scores.p2;
+                        const oppScore = myRole === 'p1' ? scores.p2 : scores.p1;
+                        result = myScore > oppScore ? 'win' : myScore < oppScore ? 'lose' : 'draw';
+                    } else {
+                        result = scores.p1 > scores.p2 ? 'win' : scores.p1 < scores.p2 ? 'lose' : 'draw';
+                    }
+                    showWinModal(result);
+                }, 800);
+            }
+        }
+
+        function updateTurnIndicator() {
+            const indicator = document.getElementById('turn-indicator');
+            if (gameMode === 'online') {
+                if (currentPlayer === myRole) { indicator.innerText = "Đến lượt Bạn đi!"; indicator.style.color = "#2e7d32"; } 
+                else { indicator.innerText = `Đến lượt ${currentPlayer === 'p1' ? names.p1 : names.p2}...`; indicator.style.color = "#c62828"; }
+            } else {
+                if (currentPlayer === 'p1') { indicator.innerText = "Đến lượt Bạn đi!"; indicator.style.color = "#2e7d32"; } 
+                else { indicator.innerText = "Máy đang rải quân..."; indicator.style.color = "#c62828"; }
+            }
+        }
+
+        function openOptions() { isPaused = true; document.getElementById('options-modal').style.display = 'flex'; }
+        function closeOptions() { isPaused = false; document.getElementById('options-modal').style.display = 'none'; }
+        function backToMainMenu() { currentMoveId++; isPaused = false; hideWinModal(); window.location.reload(); }
+        function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+    </script>
+</body>
+</html>
