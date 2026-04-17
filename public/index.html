@@ -67,8 +67,13 @@
         .score-board { font-size: 1.8rem; background: rgba(255, 248, 235, 0.9); padding: 5px 25px; border-radius: 20px; border: 2px solid var(--board-side); box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .p-name { font-weight: bold; color: #d32f2f; }
         
-        .turn-info-wrapper { display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 0; margin-bottom: 15px; }
+        .turn-info-wrapper { display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 0; margin-bottom: 15px; height: 50px; }
         #turn-indicator { text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 2px 3px 5px rgba(0,0,0,0.4); margin: 0; font-size: 2.2rem; }
+
+        /* Nút mượn dân */
+        #borrow-btn { display: none; padding: 5px 15px; font-size: 1.2rem; background-color: #e65100; border-color: #bf360c; width: auto; margin: 0; animation: popIn 0.3s ease-out; box-shadow: 0 4px 0 #bf360c; }
+        #borrow-btn:hover { background-color: #f57c00; }
+        #borrow-btn:active { box-shadow: 0 0px 0 #bf360c; transform: translateY(4px); }
 
         #timer-container { position: relative; width: 50px; height: 50px; display: none; }
         .timer-svg { width: 50px; height: 50px; transform: rotate(-90deg); filter: drop-shadow(0 4px 5px rgba(0,0,0,0.4)); }
@@ -159,6 +164,7 @@
             .top-bar { padding: 5px 10px; flex-wrap: wrap; justify-content: space-between; }
             .score-board { font-size: 1.1rem; padding: 5px 10px; margin-bottom: 10px; order: -1; width: 100%; text-align: center; }
             #turn-indicator { font-size: 1.6rem !important; }
+            #borrow-btn { font-size: 1rem; padding: 5px 10px; }
             #timer-container { width: 40px; height: 40px; }
             .timer-svg { width: 40px; height: 40px; }
             #timer-text { font-size: 1.1rem; }
@@ -261,6 +267,7 @@
 
             <div class="turn-info-wrapper">
                 <h2 id="turn-indicator">Lượt của bạn!</h2>
+                <button id="borrow-btn" onclick="borrowStones()">Mượn 5 dân</button>
                 <div id="timer-container">
                     <svg class="timer-svg" viewBox="0 0 36 36">
                         <path class="timer-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
@@ -329,12 +336,12 @@
 
         let unlockedLevel = parseInt(localStorage.getItem('oanquan_unlocked_level')) || 1;
         let currentCampaignLevel = 1;
-        let isTimedMode = false; // Biến kiểm soát chế độ thời gian
+        let isTimedMode = false;
 
         const campaignLevels = [
-            { id: 1, name: "Thi Hương (Mâm cỗ mới)", diff: 'easy', board: null },
-            { id: 2, name: "Thi Hội (Chiến thuật)", diff: 'medium', board: null },
-            { id: 3, name: "Thi Đình (Căng thẳng)", diff: 'hard', board: null },
+            { id: 1, name: "Thi Hương (Mâm Cỗ Mới)", diff: 'easy', board: null },
+            { id: 2, name: "Thi Hội (Chiến Thuật)", diff: 'medium', board: null },
+            { id: 3, name: "Thi Đình (Căng Thẳng)", diff: 'hard', board: null },
             { id: 4, name: "Sĩ Tử Khởi Nghiệp", diff: 'hard', board: [ { quan: 1, dan: 2 }, { quan: 0, dan: 3 }, { quan: 0, dan: 0 }, { quan: 0, dan: 4 }, { quan: 0, dan: 1 }, { quan: 0, dan: 2 }, { quan: 1, dan: 0 }, { quan: 0, dan: 5 }, { quan: 0, dan: 1 }, { quan: 0, dan: 0 }, { quan: 0, dan: 4 }, { quan: 0, dan: 3 } ]},
             { id: 5, name: "Quan Trường Thử Thách", diff: 'hard', board: [ { quan: 1, dan: 5 }, { quan: 0, dan: 1 }, { quan: 0, dan: 4 }, { quan: 0, dan: 1 }, { quan: 0, dan: 4 }, { quan: 0, dan: 1 }, { quan: 1, dan: 0 }, { quan: 0, dan: 2 }, { quan: 0, dan: 0 }, { quan: 0, dan: 3 }, { quan: 0, dan: 0 }, { quan: 0, dan: 2 } ]},
             { id: 6, name: "Sóng Gió Bất Cờ", diff: 'hard', board: [ { quan: 0, dan: 8 }, { quan: 0, dan: 0 }, { quan: 0, dan: 2 }, { quan: 0, dan: 0 }, { quan: 0, dan: 5 }, { quan: 0, dan: 0 }, { quan: 1, dan: 2 }, { quan: 0, dan: 3 }, { quan: 0, dan: 0 }, { quan: 0, dan: 1 }, { quan: 0, dan: 2 }, { quan: 0, dan: 0 } ]},
@@ -357,7 +364,7 @@
         function startCampaignLevel(levelId) {
             currentCampaignLevel = levelId; let lvl = campaignLevels[levelId - 1];
             botDifficulty = lvl.diff; names.p1 = "Sĩ tử"; names.p2 = "Quan Chủ Khảo";
-            isTimedMode = true; // Thi trạng nguyên BẮT BUỘC có tính giờ
+            isTimedMode = true;
             startGame('campaign', lvl.board);
         }
 
@@ -367,7 +374,7 @@
 
             document.getElementById('wname-p1').innerText = names.p1; document.getElementById('wname-p2').innerText = names.p2;
             document.getElementById('wval-p1').innerText  = scores.p1; document.getElementById('wval-p2').innerText  = scores.p2;
-            wc1.classList.remove('winner'); wc2.classList.remove('winner'); stopTurnTimer();
+            wc1.classList.remove('winner'); wc2.classList.remove('winner'); stopTurnTimer(); document.getElementById('borrow-btn').style.display = 'none';
 
             if (gameMode === 'campaign') {
                 let lvlName = campaignLevels[currentCampaignLevel - 1].name;
@@ -398,68 +405,48 @@
         function hideDifficultyModal() { document.getElementById('difficulty-modal').style.display = 'none'; }
         function startOfflineGame(difficulty) { 
             botDifficulty = difficulty; 
-            isTimedMode = document.getElementById('offline-timer').checked; // Lấy tuỳ chọn thời gian khi chơi với máy
+            isTimedMode = document.getElementById('offline-timer').checked;
             hideDifficultyModal(); 
             startGame('offline'); 
         }
 
         let board = []; let scores = { p1: 0, p2: 0 }; let currentPlayer = 'p1'; let isAnimating = false; let isPaused = false; let currentMoveId = 0; 
         
-        // --- LOGIC ĐỒNG HỒ ĐẾM NGƯỢC ---
+        // --- LOGIC ĐỒNG HỒ ---
         const TURN_TIME_LIMIT = 15; 
-        let currentTimer = 0;
-        let timerInterval = null;
+        let currentTimer = 0; let timerInterval = null;
 
         function startTurnTimer() {
             stopTurnTimer();
-            // Ẩn đồng hồ nếu không bật chế độ tính giờ, HOẶC đang chờ lượt đối thủ
-            if (!isTimedMode || 
-                (gameMode === 'online' && currentPlayer !== myRole) || 
-                ((gameMode === 'offline' || gameMode === 'campaign') && currentPlayer !== 'p1')) {
-                document.getElementById('timer-container').style.display = 'none';
-                return;
+            if (!isTimedMode || (gameMode === 'online' && currentPlayer !== myRole) || ((gameMode === 'offline' || gameMode === 'campaign') && currentPlayer !== 'p1')) {
+                document.getElementById('timer-container').style.display = 'none'; return;
             }
-
-            document.getElementById('timer-container').style.display = 'block';
-            currentTimer = TURN_TIME_LIMIT;
-            updateTimerUI();
-
+            document.getElementById('timer-container').style.display = 'block'; currentTimer = TURN_TIME_LIMIT; updateTimerUI();
             timerInterval = setInterval(() => {
                 if (isPaused || isAnimating) return; 
-                
-                currentTimer--;
-                updateTimerUI();
-
-                if (currentTimer <= 0) {
-                    stopTurnTimer();
-                    handleTimeoutForceMove();
-                }
+                currentTimer--; updateTimerUI();
+                if (currentTimer <= 0) { stopTurnTimer(); handleTimeoutForceMove(); }
             }, 1000);
         }
 
         function updateTimerUI() {
-            const path = document.getElementById('timer-path');
-            const text = document.getElementById('timer-text');
-            const container = document.getElementById('timer-container');
-
-            text.innerText = currentTimer;
-            const percentage = (currentTimer / TURN_TIME_LIMIT) * 100;
-            path.style.strokeDasharray = `${percentage}, 100`;
-
-            if (currentTimer <= 5) container.classList.add('timer-warning');
-            else container.classList.remove('timer-warning');
+            const path = document.getElementById('timer-path'); const text = document.getElementById('timer-text'); const container = document.getElementById('timer-container');
+            text.innerText = currentTimer; const percentage = (currentTimer / TURN_TIME_LIMIT) * 100; path.style.strokeDasharray = `${percentage}, 100`;
+            if (currentTimer <= 5) container.classList.add('timer-warning'); else container.classList.remove('timer-warning');
         }
 
-        function stopTurnTimer() {
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = null;
-        }
+        function stopTurnTimer() { if (timerInterval) clearInterval(timerInterval); timerInterval = null; }
 
         function handleTimeoutForceMove() {
-            let validPits = [];
-            if (myRole === 'p1') validPits = [7, 8, 9, 10, 11].filter(i => board[i].dan > 0);
-            else validPits = [1, 2, 3, 4, 5].filter(i => board[i].dan > 0);
+            let myPits = myRole === 'p1' ? [7, 8, 9, 10, 11] : [1, 2, 3, 4, 5];
+            
+            // Xử lý nếu hết giờ mà ô đang trống (ép mượn dân tự động)
+            if (myPits.every(i => board[i].dan === 0)) {
+                let quanHasPoints = (board[0].quan > 0 || board[0].dan > 0 || board[6].quan > 0 || board[6].dan > 0);
+                if (quanHasPoints) borrowStones();
+            }
 
+            let validPits = myPits.filter(i => board[i].dan > 0);
             if (validPits.length > 0) {
                 const randomPit = validPits[Math.floor(Math.random() * validPits.length)];
                 const randomDir = Math.random() > 0.5 ? 1 : -1;
@@ -470,7 +457,45 @@
                 updateTurnIndicator();
             }
         }
-        // ------------------------------
+        
+        // --- LOGIC MƯỢN DÂN ---
+        function checkBorrowCondition() {
+            document.getElementById('borrow-btn').style.display = 'none';
+            if (isAnimating || isPaused) return;
+
+            let quanHasPoints = (board[0].quan > 0 || board[0].dan > 0 || board[6].quan > 0 || board[6].dan > 0);
+            if (!quanHasPoints) return;
+
+            if (gameMode === 'online') {
+                if (currentPlayer !== myRole) return;
+                let pits = (myRole === 'p1') ? [7,8,9,10,11] : [1,2,3,4,5];
+                if (pits.every(i => board[i].dan === 0)) document.getElementById('borrow-btn').style.display = 'inline-block';
+            } else { 
+                if (currentPlayer === 'p1') {
+                    if ([7,8,9,10,11].every(i => board[i].dan === 0)) document.getElementById('borrow-btn').style.display = 'inline-block';
+                } 
+            }
+        }
+
+        function borrowStones() {
+            document.getElementById('borrow-btn').style.display = 'none';
+            if (gameMode === 'online') {
+                socket.emit('makeMove', { roomCode: currentRoom, isBorrow: true, player: currentPlayer });
+            }
+            executeBorrow(currentPlayer);
+        }
+
+        function executeBorrow(player) {
+            if (player === 'p1') {
+                scores.p1 -= 5;
+                for(let i=7; i<=11; i++) board[i].dan++;
+            } else {
+                scores.p2 -= 5;
+                for(let i=1; i<=5; i++) board[i].dan++;
+            }
+            playDropSound();
+            updateBoardUI();
+        }
 
         function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
@@ -479,7 +504,6 @@
         function createRoom() { 
             const pName = document.getElementById('player-name').value.trim() || "Chủ phòng"; 
             const isTimed = document.getElementById('online-timer').checked ? "1" : "0";
-            // Ép tuỳ chọn tính giờ vào tên để truyền sang máy khách mà không cần sửa file server.js
             socket.emit('createRoom', pName + "|||" + isTimed); 
         }
         
@@ -490,22 +514,21 @@
             socket.on('roomJoined', (role) => { currentRoom = document.getElementById('room-input').value.trim(); myRole = role; });
             socket.on('roomError', (msg) => { document.getElementById('room-status').innerText = msg; });
             socket.on('gameStart', (data) => { 
-                // Tách tên và cấu hình tính giờ
-                let p1Data = data.p1Name.split("|||");
-                names.p1 = p1Data[0]; 
-                isTimedMode = (p1Data[1] === "1");
-                names.p2 = data.p2Name; 
-                
+                let p1Data = data.p1Name.split("|||"); names.p1 = p1Data[0]; isTimedMode = (p1Data[1] === "1"); names.p2 = data.p2Name; 
                 alert(`Đã kết nối! Trò chơi bắt đầu.\nChế độ: ${isTimedMode ? "CÓ TÍNH GIỜ (15s)" : "KHÔNG TÍNH GIỜ"}`); 
                 startGame('online'); 
             });
-            socket.on('receiveMove', (data) => { startMove(data.index, data.direction); });
+            socket.on('receiveMove', (data) => { 
+                if (data.isBorrow) executeBorrow(data.player);
+                else startMove(data.index, data.direction); 
+            });
             socket.on('opponentDisconnected', () => { if (gameMode === 'online') { alert("Đối thủ đã thoát!"); window.location.reload(); } });
         }
 
         function startGame(mode, customBoard = null) {
             currentMoveId++; gameMode = mode; scores = { p1: 0, p2: 0 }; currentPlayer = 'p1'; isAnimating = false; isPaused = false; 
             document.getElementById('hand-cursor').style.display = 'none';
+            document.getElementById('borrow-btn').style.display = 'none';
             stopTurnTimer();
             
             if(mode === 'offline') { names.p1 = "Bạn"; names.p2 = "Máy"; }
@@ -588,7 +611,8 @@
 
         async function startMove(startIndex, direction) {
             if(isAnimating || isPaused) return;
-            isAnimating = true; stopTurnTimer(); currentMoveId++; let myMoveId = currentMoveId; 
+            isAnimating = true; stopTurnTimer(); document.getElementById('borrow-btn').style.display = 'none';
+            currentMoveId++; let myMoveId = currentMoveId; 
             updateBoardUI(); 
             const hand = document.getElementById('hand-cursor'); hand.style.display = 'block';
 
@@ -642,7 +666,18 @@
         function botMove() {
             if (gameMode === 'online' || currentPlayer !== 'p2' || isAnimating || isPaused) return;
             let validPits = [1, 2, 3, 4, 5].filter(i => board[i].dan > 0);
-            if (validPits.length === 0) { currentPlayer = 'p1'; updateTurnIndicator(); return; }
+            
+            // XỬ LÝ BOT MƯỢN DÂN
+            if (validPits.length === 0) { 
+                let quanHasPoints = (board[0].quan > 0 || board[0].dan > 0 || board[6].quan > 0 || board[6].dan > 0);
+                if (quanHasPoints) {
+                    executeBorrow('p2');
+                    setTimeout(botMove, 500); // Đợi nửa giây rồi cho bot đi tiếp
+                    return;
+                } else {
+                    currentPlayer = 'p1'; updateTurnIndicator(); return; 
+                }
+            }
 
             let chosenPit, chosenDir;
             if (botDifficulty === 'easy') { chosenPit = validPits[Math.floor(Math.random() * validPits.length)]; chosenDir = Math.random() > 0.5 ? 1 : -1; } 
@@ -686,7 +721,7 @@
 
         function checkWinCondition() {
             if(board[0].quan === 0 && board[0].dan === 0 && board[6].quan === 0 && board[6].dan === 0) {
-                stopTurnTimer();
+                stopTurnTimer(); document.getElementById('borrow-btn').style.display = 'none';
                 setTimeout(() => {
                     let result;
                     if (gameMode === 'online') { const myScore = myRole === 'p1' ? scores.p1 : scores.p2; const oppScore = myRole === 'p1' ? scores.p2 : scores.p1; result = myScore > oppScore ? 'win' : myScore < oppScore ? 'lose' : 'draw'; } 
@@ -715,6 +750,7 @@
                 else { indicator.innerText = "Máy đang rải quân..."; indicator.style.color = "#c62828"; }
             }
             startTurnTimer();
+            checkBorrowCondition(); // Kiểm tra điều kiện hiện nút Mượn Dân
         }
 
         function openOptions() { isPaused = true; document.getElementById('options-modal').style.display = 'flex'; }
