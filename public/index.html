@@ -674,7 +674,13 @@
                 if (existingDan.length < targetDan) {
                     for(let j = existingDan.length; j < targetDan; j++) {
                         const danEl = document.createElement('div'); danEl.className = 'stone-dan';
-                        const x = 20 + Math.random() * ((isQuanPit?120:90) - 40); const y = 20 + Math.random() * ((isQuanPit?200:90) - 40);
+                        // Tự động lấy kích thước thực tế của ô hiện tại trên màn hình (điện thoại hoặc máy tính)
+                        const cellW = cell.clientWidth || (isQuanPit ? 120 : 90);
+                        const cellH = cell.clientHeight || (isQuanPit ? 200 : 90);
+                        // Rải sỏi an toàn trong khoảng 60% diện tích giữa ô, chừa lại 20% viền xung quanh để không bị tràn
+                        const x = (cellW * 0.2) + Math.random() * (cellW * 0.6); 
+                        const y = (cellH * 0.2) + Math.random() * (cellH * 0.6);
+
                         danEl.style.left = `${x}px`; danEl.style.top = `${y}px`;
                         danEl.style.transform = `translate(-50%, -50%) rotate(${Math.random()*360}deg)`; cell.appendChild(danEl);
                     }
