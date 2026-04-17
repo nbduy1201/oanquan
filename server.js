@@ -84,7 +84,7 @@ io.on('connection', (socket) => {
     });
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const HOST_IP = getLocalIp();
 
 server.listen(PORT, '0.0.0.0', () => {
