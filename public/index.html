@@ -20,7 +20,6 @@
             background-position: center; background-repeat: no-repeat; background-attachment: fixed;    
             background-color: #e6d5b8; color: var(--text-color);
             display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; letter-spacing: 1px;
-            /* Thay đổi trỏ chuột mặc định thành Bantay1.png */
             cursor: url('img_src/Bantay1.png'), auto;
         }
 
@@ -38,25 +37,16 @@
 
         h1 { font-size: 4rem; color: #5c2c16; text-shadow: -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff, 4px 6px 10px rgba(0,0,0,0.6); margin-bottom: 20px; font-weight: bold; }
 
-        /* --- ĐỒNG BỘ NÚT BẤM VÀ HIỆU ỨNG --- */
         button {
             background-color: var(--btn-bg); color: #fff; border: 2px solid var(--btn-border); border-radius: 8px;
             padding: 12px 20px; margin: 10px; font-size: 1.5rem; font-family: 'Pattaya', sans-serif; 
-            /* Cập nhật trỏ chuột khi hover vào nút */
             cursor: url('img_src/Bantay1.png'), pointer !important; 
             transition: all 0.2s ease-out;
             box-shadow: 0 5px 0px var(--btn-border), 0 10px 20px rgba(0,0,0,0.6); text-shadow: 1px 1px 2px #000;
             width: 100%; max-width: 280px; box-sizing: border-box;
         }
-        button:hover { 
-            background-color: var(--btn-hover); 
-            transform: translateY(2px); 
-            box-shadow: 0 3px 0px var(--btn-border), 0 6px 12px rgba(0,0,0,0.6); 
-        }
-        button:active {
-            transform: translateY(5px) scale(0.98); 
-            box-shadow: 0 0px 0px var(--btn-border), 0 2px 5px rgba(0,0,0,0.6); 
-        }
+        button:hover { background-color: var(--btn-hover); transform: translateY(2px); box-shadow: 0 3px 0px var(--btn-border), 0 6px 12px rgba(0,0,0,0.6); }
+        button:active { transform: translateY(5px) scale(0.98); box-shadow: 0 0px 0px var(--btn-border), 0 2px 5px rgba(0,0,0,0.6); }
 
         .top-bar button { width: auto; max-width: none; margin: 0; padding: 8px 20px; font-size: 1.2rem; }
 
@@ -77,7 +67,6 @@
         }
         
         #waiting-room { display: none; z-index: 20; animation: popIn 0.4s ease-out; }
-        
         @keyframes popIn { 0% { opacity: 0; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
 
         .room-code-display { font-size: 4rem; color: #d32f2f; letter-spacing: 10px; font-weight: bold; margin: 10px 0; text-shadow: 2px 2px 0px #fff; }
@@ -91,14 +80,19 @@
 
         .board-wrapper { transform: rotateX(40deg); transform-style: preserve-3d; margin-top: -10px; }
         .board { display: flex; align-items: center; justify-content: center; background-color: var(--board-color); padding: 20px; border-radius: 80px; border: 5px solid #4a2e00; box-shadow: 0 20px 0 var(--board-side), 0 35px 20px rgba(0,0,0,0.5); position: relative; }
+        
+        /* --- CSS MỚI ĐỂ LẬT BÀN CỜ --- */
+        .middle-col { display: flex; flex-direction: column; }
+        .board.flipped { flex-direction: row-reverse; }
+        .board.flipped .middle-col { flex-direction: column-reverse; }
+        .board.flipped .dan-grid { direction: rtl; }
+
         .quan-cell { width: 120px; height: 200px; background-color: var(--cell-color); border-radius: 60px; border: 3px solid #5a3a1b; box-shadow: var(--cell-shadow); position: relative; margin: 0 15px; display: flex; justify-content: center; align-items: center; }
         .dan-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
         
         .dan-cell { 
             width: 90px; height: 90px; background-color: var(--cell-color); border: 3px solid #5a3a1b; 
-            box-shadow: var(--cell-shadow); position: relative; 
-            transition: box-shadow 0.3s; 
-            /* Cập nhật trỏ chuột Bantay1 khi hover ô dân */
+            box-shadow: var(--cell-shadow); position: relative; transition: box-shadow 0.3s; 
             cursor: url('img_src/Bantay1.png'), pointer;
         }
         
@@ -109,33 +103,18 @@
         .stone-dan:nth-child(even) { background: radial-gradient(circle at 30% 30%, #b8b8b8, #4d4d4d); }
         .stone-dan:nth-child(3n) { background: radial-gradient(circle at 30% 30%, #d4c0a3, #6b5c47); }
         .stone-quan { width: 45px; height: 35px; border-radius: 40% 60% 55% 45% / 50% 55% 45% 50%; background: radial-gradient(circle at 30% 20%, #f5f5f5, #808080, #333); box-shadow: 3px 5px 8px rgba(0,0,0,0.7); position: absolute; transform: translate(-50%, -50%); pointer-events: none; }
-        .count-badge { position: absolute; bottom: -15px; right: -10px; background: rgba(74, 46, 0, 0.85); color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 1.1rem; transform: translateZ(20px); pointer-events: none; border: 1px solid #dcb881; }
+        
+        .count-badge { position: absolute; bottom: -15px; right: -10px; background: rgba(74, 46, 0, 0.85); color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 1.1rem; transform: translateZ(20px); pointer-events: none; border: 1px solid #dcb881; direction: ltr; }
 
-        .arrows { position: absolute; top: -50px; left: 50%; transform: translateX(-50%) translateZ(40px) rotateX(-40deg); display: flex; gap: 20px; z-index: 30; }
-        
-        .arrow-btn { 
-            background: var(--highlight); color: #000; border: 2px solid #5a3a1b; font-family: sans-serif; 
-            border-radius: 50%; width: 40px; height: 40px; font-size: 1.2rem; 
-            box-shadow: 0 4px 0px #5a3a1b; display: flex; justify-content: center; align-items: center; 
-            padding: 0; transition: all 0.2s; 
-            /* Cập nhật trỏ chuột Bantay1 khi hover mũi tên */
-            cursor: url('img_src/Bantay1.png'), pointer;
-        }
-        
+        .arrows { position: absolute; top: -50px; left: 50%; transform: translateX(-50%) translateZ(40px) rotateX(-40deg); display: flex; gap: 20px; z-index: 30; direction: ltr; }
+        .arrow-btn { background: var(--highlight); color: #000; border: 2px solid #5a3a1b; font-family: sans-serif; border-radius: 50%; width: 40px; height: 40px; font-size: 1.2rem; box-shadow: 0 4px 0px #5a3a1b; display: flex; justify-content: center; align-items: center; padding: 0; transition: all 0.2s; cursor: url('img_src/Bantay1.png'), pointer; }
         .arrow-btn:hover { background: #ffea75; transform: scale(1.1); box-shadow: 0 2px 0px #5a3a1b; }
         
-        /* --- HIỆU ỨNG TAY RẢI QUÂN BẰNG HÌNH ẢNH (Bantay2.png) --- */
         #hand-cursor { 
-            position: absolute; 
-            width: 100px; height: 100px; /* Kích thước khung bàn tay rải */
-            background-image: url('img_src/Bantay2.png');
-            background-size: contain; 
-            background-repeat: no-repeat; 
-            background-position: center;
-            pointer-events: none; 
-            transition: all 0.5s ease-in-out; 
-            display: none; z-index: 50; 
-            filter: drop-shadow(0 15px 8px rgba(0,0,0,0.6)); 
+            position: absolute; width: 100px; height: 100px; background-image: url('img_src/Bantay2.png');
+            background-size: contain; background-repeat: no-repeat; background-position: center; pointer-events: none; 
+            transition: all 0.2s ease-in-out; /* Tăng tốc độ tay di chuyển */
+            display: none; z-index: 50; filter: drop-shadow(0 15px 8px rgba(0,0,0,0.6)); 
         }
 
         .score-anim { position: absolute; color: #d32f2f; font-size: 3rem; text-shadow: 2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff; animation: floatUp 1.5s forwards; pointer-events: none; z-index: 60; }
@@ -145,7 +124,6 @@
         #options-modal h2 { color: #ffdd57; font-size: 3rem; margin-bottom: 20px;}
         #options-modal button { width: 100%; max-width: 250px; margin: 10px 0; }
 
-        /* Difficulty Modal */
         #difficulty-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 200; }
         #difficulty-modal .diff-box { background: rgba(255, 248, 235, 0.97); border: 4px solid var(--board-side); border-radius: 20px; padding: 40px 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); text-align: center; animation: popIn 0.3s ease-out;}
         #difficulty-modal h2 { color: #5c2c16; font-size: 2.5rem; margin-bottom: 10px; }
@@ -159,11 +137,9 @@
         .diff-btn-hard:hover   { background-color: #c62828 !important; }
         .diff-badge { display: inline-block; font-size: 0.85rem; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 2px 10px; margin-left: 8px; vertical-align: middle; }
 
-        /* Win Modal */
         #win-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 300; }
         #fireworks-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 299; }
         .win-box { background: linear-gradient(135deg, #fff8eb 0%, #ffe0b2 100%); border: 5px solid #5c2c16; border-radius: 24px; padding: 40px 60px; box-shadow: 0 0 60px rgba(255,180,0,0.6), 0 15px 40px rgba(0,0,0,0.7); text-align: center; z-index: 301; animation: winPop 0.5s cubic-bezier(0.175,0.885,0.32,1.275) both; max-width: 480px; width: 90%; }
-        @keyframes winPop { 0% { transform: scale(0.3); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         .win-trophy { font-size: 5rem; animation: trophyBounce 0.8s ease infinite alternate; display: block; margin-bottom: 5px; }
         @keyframes trophyBounce { 0% { transform: translateY(0) rotate(-5deg); } 100% { transform: translateY(-12px) rotate(5deg); } }
         .win-title { font-size: 2.8rem; color: #5c2c16; margin: 10px 0 5px; text-shadow: 2px 2px 0 #fff, -1px -1px 0 #fff; }
@@ -176,47 +152,29 @@
         .win-btn-row { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
         .win-btn-row button { width: auto; font-size: 1.2rem; padding: 10px 20px; }
 
-        /* --- TỐI ƯU CHO DI ĐỘNG (MOBILE RESPONSIVE) --- */
         @media (max-width: 768px) {
-            /* Điều chỉnh tiêu đề và nút bấm */
             h1 { font-size: 2.5rem; margin-bottom: 10px; }
             button { font-size: 1.2rem; padding: 10px 15px; }
-            button, .dan-cell, .arrow-btn { touch-action: manipulation; } /* Chống delay và zoom khi chạm */
-
-            /* Thu nhỏ tổng thể bàn cờ */
-            .board-wrapper { transform: rotateX(30deg); } /* Giảm độ nghiêng 3D để dễ nhìn trên màn nhỏ */
+            button, .dan-cell, .arrow-btn { touch-action: manipulation; }
+            .board-wrapper { transform: rotateX(30deg); }
             .board { padding: 10px; border-radius: 40px; border-width: 3px; box-shadow: 0 8px 0 var(--board-side), 0 15px 10px rgba(0,0,0,0.5); }
-            
-            /* Thu nhỏ kích thước ô Quan và ô Dân */
             .quan-cell { width: 50px; height: 110px; border-radius: 25px; margin: 0 5px; border-width: 2px; }
             .dan-cell { width: 45px; height: 45px; border-width: 2px; }
             .dan-grid { gap: 4px; }
-            
-            /* Thu nhỏ Sỏi và Số đếm */
             .stone-dan { width: 10px; height: 9px; box-shadow: 1px 1px 2px rgba(0,0,0,0.6); }
             .stone-quan { width: 30px; height: 25px; }
             .count-badge { font-size: 0.9rem; padding: 1px 6px; bottom: -10px; right: -5px; }
-            
-            /* Điều chỉnh các nút mũi tên chọn hướng */
             .arrows { top: -35px; gap: 10px; }
             .arrow-btn { width: 32px; height: 32px; font-size: 1rem; }
-            
-            /* Bố cục lại thanh thông tin (Top Bar) */
             .top-bar { padding: 5px 10px; flex-wrap: wrap; justify-content: space-between; }
             .score-board { font-size: 1.1rem; padding: 5px 10px; margin-bottom: 10px; order: -1; width: 100%; text-align: center; }
             #turn-indicator { font-size: 1.3rem !important; }
-            
-            /* Thu nhỏ bàn tay rải quân */
             #hand-cursor { width: 60px; height: 60px; filter: drop-shadow(0 8px 5px rgba(0,0,0,0.5)); }
-            
-            /* Tối ưu các hộp thoại (Modals) */
             .lobby-box, #waiting-room { padding: 20px; width: 90%; }
             .room-code-display { font-size: 2.5rem; }
             .win-box { padding: 20px; width: 95%; }
             .win-title { font-size: 2rem; }
         }
-
-        /* Dành cho các màn hình điện thoại đặc biệt nhỏ (ví dụ iPhone SE) */
         @media (max-width: 380px) {
             .quan-cell { width: 40px; height: 90px; }
             .dan-cell { width: 38px; height: 38px; }
@@ -267,18 +225,10 @@
         <div class="diff-box">
             <h2>Chọn mức độ</h2>
             <p>Bạn muốn thử sức với máy ở mức nào?</p>
-            <div>
-                <button class="diff-btn-easy" onclick="startOfflineGame('easy')">Dễ <span class="diff-badge">Ngẫu nhiên</span></button>
-            </div>
-            <div>
-                <button class="diff-btn-medium" onclick="startOfflineGame('medium')">Trung bình <span class="diff-badge">Chiến thuật</span></button>
-            </div>
-            <div>
-                <button class="diff-btn-hard" onclick="startOfflineGame('hard')">Khó <span class="diff-badge">Tính trước</span></button>
-            </div>
-            <div style="margin-top: 15px;">
-                <button onclick="hideDifficultyModal()" style="background-color:#555;">Huỷ</button>
-            </div>
+            <div><button class="diff-btn-easy" onclick="startOfflineGame('easy')">Dễ <span class="diff-badge">Ngẫu nhiên</span></button></div>
+            <div><button class="diff-btn-medium" onclick="startOfflineGame('medium')">Trung bình <span class="diff-badge">Chiến thuật</span></button></div>
+            <div><button class="diff-btn-hard" onclick="startOfflineGame('hard')">Khó <span class="diff-badge">Tính trước</span></button></div>
+            <div style="margin-top: 15px;"><button onclick="hideDifficultyModal()" style="background-color:#555;">Huỷ</button></div>
         </div>
     </div>
 
@@ -287,9 +237,9 @@
             <div class="top-bar">
                 <button onclick="backToMainMenu()">Thoát</button>
                 <div class="score-board">
-                    <span id="name-p2" class="p-name">Khách</span>: <span id="score-p2">0</span> 
+                    <span id="name-top" class="p-name">Khách</span>: <span id="score-top">0</span> 
                     &nbsp;|&nbsp; 
-                    <span id="name-p1" class="p-name">Chủ</span>: <span id="score-p1">0</span>
+                    <span id="name-bot" class="p-name">Bạn</span>: <span id="score-bot">0</span>
                 </div>
                 <button onclick="openOptions()">Tuỳ chọn</button>
             </div>
@@ -299,7 +249,7 @@
             <div class="board-wrapper">
                 <div class="board" id="board-ui">
                     <div class="quan-cell" id="pit-0"></div>
-                    <div>
+                    <div class="middle-col">
                         <div class="dan-grid" style="margin-bottom: 8px;">
                             <div class="dan-cell" id="pit-1" onclick="selectPit(1)"></div>
                             <div class="dan-cell" id="pit-2" onclick="selectPit(2)"></div>
@@ -354,23 +304,14 @@
     </div>
 
     <script>
-        // ============================================================
-        // SOUND ENGINE (Web Audio API – không cần file âm thanh)
-        // ============================================================
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
-        function getAudioCtx() {
-            if (!audioCtx) audioCtx = new AudioCtx();
-            return audioCtx;
-        }
+        function getAudioCtx() { if (!audioCtx) audioCtx = new AudioCtx(); return audioCtx; }
 
         function playDropSound() {
             try {
-                const ctx = getAudioCtx();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain); gain.connect(ctx.destination);
-                osc.type = 'sine';
+                const ctx = getAudioCtx(); const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination); osc.type = 'sine';
                 const baseFreq = 380 + Math.random() * 180;
                 osc.frequency.setValueAtTime(baseFreq, ctx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.6, ctx.currentTime + 0.08);
@@ -384,15 +325,11 @@
             try {
                 const ctx = getAudioCtx();
                 for (let i = 0; i < 3; i++) {
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.connect(gain); gain.connect(ctx.destination);
-                    osc.type = 'triangle';
+                    const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                    osc.connect(gain); gain.connect(ctx.destination); osc.type = 'triangle';
                     const t = ctx.currentTime + i * 0.07;
-                    osc.frequency.setValueAtTime(600 - i * 80, t);
-                    osc.frequency.exponentialRampToValueAtTime(200, t + 0.15);
-                    gain.gain.setValueAtTime(0.3, t);
-                    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+                    osc.frequency.setValueAtTime(600 - i * 80, t); osc.frequency.exponentialRampToValueAtTime(200, t + 0.15);
+                    gain.gain.setValueAtTime(0.3, t); gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
                     osc.start(t); osc.stop(t + 0.2);
                 }
             } catch(e) {}
@@ -400,71 +337,45 @@
 
         function playWinSound() {
             try {
-                const ctx = getAudioCtx();
-                const melody = [523, 659, 784, 1047];
+                const ctx = getAudioCtx(); const melody = [523, 659, 784, 1047];
                 melody.forEach((freq, i) => {
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.connect(gain); gain.connect(ctx.destination);
-                    osc.type = 'square';
+                    const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                    osc.connect(gain); gain.connect(ctx.destination); osc.type = 'square';
                     const t = ctx.currentTime + i * 0.18;
-                    osc.frequency.setValueAtTime(freq, t);
-                    gain.gain.setValueAtTime(0.2, t);
-                    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
-                    osc.start(t); osc.stop(t + 0.4);
+                    osc.frequency.setValueAtTime(freq, t); gain.gain.setValueAtTime(0.2, t);
+                    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35); osc.start(t); osc.stop(t + 0.4);
                 });
             } catch(e) {}
         }
 
         function playLoseSound() {
             try {
-                const ctx = getAudioCtx();
-                const melody = [400, 330, 260];
+                const ctx = getAudioCtx(); const melody = [400, 330, 260];
                 melody.forEach((freq, i) => {
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.connect(gain); gain.connect(ctx.destination);
-                    osc.type = 'sawtooth';
+                    const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                    osc.connect(gain); gain.connect(ctx.destination); osc.type = 'sawtooth';
                     const t = ctx.currentTime + i * 0.2;
-                    osc.frequency.setValueAtTime(freq, t);
-                    gain.gain.setValueAtTime(0.15, t);
-                    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
-                    osc.start(t); osc.stop(t + 0.4);
+                    osc.frequency.setValueAtTime(freq, t); gain.gain.setValueAtTime(0.15, t);
+                    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35); osc.start(t); osc.stop(t + 0.4);
                 });
             } catch(e) {}
         }
 
-        // ============================================================
-        // FIREWORKS ENGINE
-        // ============================================================
         const fwCanvas = document.getElementById('fireworks-canvas');
         const fwCtx = fwCanvas.getContext('2d');
-        let fwParticles = [];
-        let fwAnimId = null;
+        let fwParticles = []; let fwAnimId = null;
 
-        function resizeFwCanvas() {
-            fwCanvas.width = window.innerWidth;
-            fwCanvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeFwCanvas);
-        resizeFwCanvas();
+        function resizeFwCanvas() { fwCanvas.width = window.innerWidth; fwCanvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeFwCanvas); resizeFwCanvas();
 
         function launchFirework() {
-            const x = Math.random() * fwCanvas.width;
-            const y = Math.random() * fwCanvas.height * 0.55;
+            const x = Math.random() * fwCanvas.width; const y = Math.random() * fwCanvas.height * 0.55;
             const colors = ['#ff4e4e','#ffdd57','#48c774','#3273dc','#ff69b4','#ff9f43','#a29bfe','#fd79a8'];
             const color = colors[Math.floor(Math.random() * colors.length)];
             const count = 60 + Math.floor(Math.random() * 40);
             for (let i = 0; i < count; i++) {
-                const angle = (Math.PI * 2 / count) * i;
-                const speed = 2 + Math.random() * 5;
-                fwParticles.push({
-                    x, y,
-                    vx: Math.cos(angle) * speed,
-                    vy: Math.sin(angle) * speed,
-                    alpha: 1, color, radius: 2 + Math.random() * 2.5,
-                    decay: 0.012 + Math.random() * 0.01, gravity: 0.08
-                });
+                const angle = (Math.PI * 2 / count) * i; const speed = 2 + Math.random() * 5;
+                fwParticles.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, alpha: 1, color, radius: 2 + Math.random() * 2.5, decay: 0.012 + Math.random() * 0.01, gravity: 0.08 });
             }
         }
 
@@ -472,176 +383,80 @@
             fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
             fwParticles = fwParticles.filter(p => p.alpha > 0.02);
             fwParticles.forEach(p => {
-                p.x += p.vx; p.y += p.vy;
-                p.vy += p.gravity;
-                p.vx *= 0.98; p.vy *= 0.98;
-                p.alpha -= p.decay;
-                fwCtx.save();
-                fwCtx.globalAlpha = Math.max(0, p.alpha);
-                fwCtx.beginPath();
-                fwCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                fwCtx.fillStyle = p.color;
-                fwCtx.shadowBlur = 8; fwCtx.shadowColor = p.color;
-                fwCtx.fill();
-                fwCtx.restore();
+                p.x += p.vx; p.y += p.vy; p.vy += p.gravity; p.vx *= 0.98; p.vy *= 0.98; p.alpha -= p.decay;
+                fwCtx.save(); fwCtx.globalAlpha = Math.max(0, p.alpha); fwCtx.beginPath();
+                fwCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); fwCtx.fillStyle = p.color; fwCtx.shadowBlur = 8; fwCtx.shadowColor = p.color; fwCtx.fill(); fwCtx.restore();
             });
             fwAnimId = requestAnimationFrame(animateFireworks);
         }
 
         let fwIntervalId = null;
-        function startFireworks() {
-            fwCanvas.style.display = 'block';
-            animateFireworks();
-            launchFirework();
-            fwIntervalId = setInterval(launchFirework, 500);
-        }
+        function startFireworks() { fwCanvas.style.display = 'block'; animateFireworks(); launchFirework(); fwIntervalId = setInterval(launchFirework, 500); }
+        function stopFireworks() { clearInterval(fwIntervalId); fwIntervalId = null; if (fwAnimId) { cancelAnimationFrame(fwAnimId); fwAnimId = null; } fwParticles = []; fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height); fwCanvas.style.display = 'none'; }
 
-        function stopFireworks() {
-            clearInterval(fwIntervalId); fwIntervalId = null;
-            if (fwAnimId) { cancelAnimationFrame(fwAnimId); fwAnimId = null; }
-            fwParticles = [];
-            fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
-            fwCanvas.style.display = 'none';
-        }
-
-        // ============================================================
-        // WIN MODAL
-        // ============================================================
         function showWinModal(result) {
-            const modal = document.getElementById('win-modal');
-            const trophy = document.getElementById('win-trophy');
-            const title  = document.getElementById('win-title');
-            const sub    = document.getElementById('win-subtitle');
-            const wc1    = document.getElementById('wcard-p1');
-            const wc2    = document.getElementById('wcard-p2');
+            const modal = document.getElementById('win-modal'); const trophy = document.getElementById('win-trophy'); const title = document.getElementById('win-title'); const sub = document.getElementById('win-subtitle');
+            const wc1 = document.getElementById('wcard-p1'); const wc2 = document.getElementById('wcard-p2');
 
-            document.getElementById('wname-p1').innerText = names.p1;
-            document.getElementById('wname-p2').innerText = names.p2;
-            document.getElementById('wval-p1').innerText  = scores.p1;
-            document.getElementById('wval-p2').innerText  = scores.p2;
+            document.getElementById('wname-p1').innerText = names.p1; document.getElementById('wname-p2').innerText = names.p2;
+            document.getElementById('wval-p1').innerText  = scores.p1; document.getElementById('wval-p2').innerText  = scores.p2;
             wc1.classList.remove('winner'); wc2.classList.remove('winner');
 
             if (result === 'win') {
-                trophy.innerText = '🏆'; title.innerText = 'CHIẾN THẮNG!';
-                sub.innerText = 'Xuất sắc lắm! Bạn đã thắng!';
-                if (gameMode === 'online') {
-                    if (myRole === 'p1') wc1.classList.add('winner'); else wc2.classList.add('winner');
-                } else { wc1.classList.add('winner'); }
+                trophy.innerText = '🏆'; title.innerText = 'CHIẾN THẮNG!'; sub.innerText = 'Xuất sắc lắm! Bạn đã thắng!';
+                if (gameMode === 'online') { if (myRole === 'p1') wc1.classList.add('winner'); else wc2.classList.add('winner'); } else { wc1.classList.add('winner'); }
                 playWinSound(); startFireworks();
             } else if (result === 'lose') {
-                trophy.innerText = '😢'; title.innerText = 'THUA RỒI!';
-                sub.innerText = 'Đáng tiếc! Hãy thử lại nhé!';
-                if (gameMode === 'online') {
-                    if (myRole === 'p2') wc1.classList.add('winner'); else wc2.classList.add('winner');
-                } else { wc2.classList.add('winner'); }
+                trophy.innerText = '😢'; title.innerText = 'THUA RỒI!'; sub.innerText = 'Đáng tiếc! Hãy thử lại nhé!';
+                if (gameMode === 'online') { if (myRole === 'p2') wc1.classList.add('winner'); else wc2.classList.add('winner'); } else { wc2.classList.add('winner'); }
                 playLoseSound();
-            } else {
-                trophy.innerText = '🤝'; title.innerText = 'HÒA NHAU!';
-                sub.innerText = 'Hai bên ngang tài ngang sức!';
-                playWinSound();
-            }
+            } else { trophy.innerText = '🤝'; title.innerText = 'HÒA NHAU!'; sub.innerText = 'Hai bên ngang tài ngang sức!'; playWinSound(); }
 
             modal.style.display = 'flex';
         }
 
-        function hideWinModal() {
-            document.getElementById('win-modal').style.display = 'none';
-            stopFireworks();
-        }
-
-        function restartGame() {
-            hideWinModal();
-            startGame(gameMode);
-        }
+        function hideWinModal() { document.getElementById('win-modal').style.display = 'none'; stopFireworks(); }
+        function restartGame() { hideWinModal(); startGame(gameMode); }
 
         const socket = typeof io !== 'undefined' ? io() : null;
-        let gameMode = 'offline'; 
-        let myRole = 'p1'; 
-        let currentRoom = '';
-        let names = { p1: "Bạn", p2: "Máy" };
-        let botDifficulty = 'easy';
+        let gameMode = 'offline'; let myRole = 'p1'; let currentRoom = ''; let names = { p1: "Bạn", p2: "Máy" }; let botDifficulty = 'easy';
 
         function showDifficultyModal() { document.getElementById('difficulty-modal').style.display = 'flex'; }
         function hideDifficultyModal() { document.getElementById('difficulty-modal').style.display = 'none'; }
-        function startOfflineGame(difficulty) {
-            botDifficulty = difficulty;
-            hideDifficultyModal();
-            startGame('offline');
-        }
+        function startOfflineGame(difficulty) { botDifficulty = difficulty; hideDifficultyModal(); startGame('offline'); }
 
-        let board = [];
-        let scores = { p1: 0, p2: 0 }; 
-        let currentPlayer = 'p1'; 
-        let isAnimating = false;
-        let isPaused = false;
-        let currentMoveId = 0; 
+        let board = []; let scores = { p1: 0, p2: 0 }; let currentPlayer = 'p1'; let isAnimating = false; let isPaused = false; let currentMoveId = 0; 
 
-        function showScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-        }
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
-        // --- SOCKET.IO ---
-        function startMultiplayer() {
-            if (!socket) return alert("Không tìm thấy server. Hãy chạy file start.bat!");
-            showScreen('multiplayer-menu');
-        }
-
-        function createRoom() {
-            const pName = document.getElementById('player-name').value.trim() || "Chủ phòng";
-            socket.emit('createRoom', pName);
-        }
-
-        function joinRoom() {
-            const code = document.getElementById('room-input').value.trim();
-            const pName = document.getElementById('player-name').value.trim() || "Khách";
-            if(code.length !== 4) return alert("Mã PIN phải gồm 4 số!");
-            socket.emit('joinRoom', { code: code, name: pName });
-            document.getElementById('room-status').innerText = "Đang kết nối...";
-        }
+        function startMultiplayer() { if (!socket) return alert("Không tìm thấy server. Hãy chạy file start.bat!"); showScreen('multiplayer-menu'); }
+        function createRoom() { const pName = document.getElementById('player-name').value.trim() || "Chủ phòng"; socket.emit('createRoom', pName); }
+        function joinRoom() { const code = document.getElementById('room-input').value.trim(); const pName = document.getElementById('player-name').value.trim() || "Khách"; if(code.length !== 4) return alert("Mã PIN phải gồm 4 số!"); socket.emit('joinRoom', { code: code, name: pName }); document.getElementById('room-status').innerText = "Đang kết nối..."; }
 
         if(socket) {
-            socket.on('roomCreated', (code) => {
-                currentRoom = code; myRole = 'p1';
-                document.getElementById('setup-room').style.display = 'none';
-                document.getElementById('waiting-room').style.display = 'flex';
-                document.getElementById('display-room-code').innerText = code;
-            });
-
-            socket.on('roomJoined', (role) => {
-                currentRoom = document.getElementById('room-input').value.trim();
-                myRole = role; 
-            });
-
+            socket.on('roomCreated', (code) => { currentRoom = code; myRole = 'p1'; document.getElementById('setup-room').style.display = 'none'; document.getElementById('waiting-room').style.display = 'flex'; document.getElementById('display-room-code').innerText = code; });
+            socket.on('roomJoined', (role) => { currentRoom = document.getElementById('room-input').value.trim(); myRole = role; });
             socket.on('roomError', (msg) => { document.getElementById('room-status').innerText = msg; });
-
             socket.on('gameStart', (data) => {
-                names.p1 = data.p1Name;
-                names.p2 = data.p2Name;
-                document.getElementById('name-p1').innerText = names.p1;
-                document.getElementById('name-p2').innerText = names.p2;
-                alert(`Đã kết nối! Bạn là: ${myRole === 'p1' ? names.p1 + ' (DƯỚI)' : names.p2 + ' (TRÊN)'}`);
+                names.p1 = data.p1Name; names.p2 = data.p2Name;
+                alert('Đã kết nối! Trò chơi bắt đầu.');
                 startGame('online');
             });
-
             socket.on('receiveMove', (data) => { startMove(data.index, data.direction); });
-            socket.on('opponentDisconnected', () => {
-                if (gameMode === 'online') { alert("Đối thủ đã thoát!"); window.location.reload(); }
-            });
+            socket.on('opponentDisconnected', () => { if (gameMode === 'online') { alert("Đối thủ đã thoát!"); window.location.reload(); } });
         }
 
-        // --- GAME LOGIC ---
         function startGame(mode) {
-            currentMoveId++; 
-            gameMode = mode;
-            scores = { p1: 0, p2: 0 }; currentPlayer = 'p1';
-            isAnimating = false; isPaused = false; 
+            currentMoveId++; gameMode = mode; scores = { p1: 0, p2: 0 }; currentPlayer = 'p1'; isAnimating = false; isPaused = false; 
             document.getElementById('hand-cursor').style.display = 'none';
             
-            if(mode === 'offline') {
-                names.p1 = "Bạn"; names.p2 = "Máy";
-                document.getElementById('name-p1').innerText = names.p1;
-                document.getElementById('name-p2').innerText = names.p2;
+            if(mode === 'offline') { names.p1 = "Bạn"; names.p2 = "Máy"; }
+
+            // Lật bàn cờ nếu là p2 (khách)
+            if (gameMode === 'online' && myRole === 'p2') {
+                document.getElementById('board-ui').classList.add('flipped');
+            } else {
+                document.getElementById('board-ui').classList.remove('flipped');
             }
 
             board = [
@@ -650,12 +465,23 @@
             ];
             
             for (let i = 0; i < 12; i++) document.getElementById(`pit-${i}`).innerHTML = '';
-            updateBoardUI(); closeOptions(); showScreen('game-screen'); updateTurnIndicator();
+            closeOptions(); showScreen('game-screen'); 
+            updateBoardUI(); updateTurnIndicator();
         }
 
         function updateBoardUI() {
-            document.getElementById('score-p1').innerText = scores.p1;
-            document.getElementById('score-p2').innerText = scores.p2;
+            // Cập nhật tên và điểm sao cho Điểm của Bạn luôn ở góc dưới bên phải
+            if (gameMode === 'online' && myRole === 'p2') {
+                document.getElementById('name-bot').innerText = names.p2;
+                document.getElementById('score-bot').innerText = scores.p2;
+                document.getElementById('name-top').innerText = names.p1;
+                document.getElementById('score-top').innerText = scores.p1;
+            } else {
+                document.getElementById('name-bot').innerText = names.p1;
+                document.getElementById('score-bot').innerText = scores.p1;
+                document.getElementById('name-top').innerText = names.p2;
+                document.getElementById('score-top').innerText = scores.p2;
+            }
 
             for (let i = 0; i < 12; i++) {
                 const cell = document.getElementById(`pit-${i}`);
@@ -674,14 +500,9 @@
                 if (existingDan.length < targetDan) {
                     for(let j = existingDan.length; j < targetDan; j++) {
                         const danEl = document.createElement('div'); danEl.className = 'stone-dan';
-                        
-                        // SỬ DỤNG PHẦN TRĂM (%) THAY VÌ PIXEL
-                        // Sinh vị trí ngẫu nhiên từ 20% đến 80% chiều rộng/cao của ô
                         const xPercent = 20 + Math.random() * 60;
                         const yPercent = 20 + Math.random() * 60;
-                        
-                        danEl.style.left = `${xPercent}%`;
-                        danEl.style.top = `${yPercent}%`;
+                        danEl.style.left = `${xPercent}%`; danEl.style.top = `${yPercent}%`;
                         danEl.style.transform = `translate(-50%, -50%) rotate(${Math.random()*360}deg)`; 
                         cell.appendChild(danEl);
                     }
@@ -713,12 +534,9 @@
                 updateBoardUI(); 
                 const cell = document.getElementById(`pit-${index}`); cell.classList.add('cell-active');
                 const arrows = document.createElement('div'); arrows.className = 'arrows';
-                const isTopRow = (gameMode === 'online' && myRole === 'p2');
-                arrows.innerHTML = isTopRow
-                    ? `<button class="arrow-btn" onclick="handlePlayerMove(${index}, -1); event.stopPropagation();">◀</button>
-                       <button class="arrow-btn" onclick="handlePlayerMove(${index}, 1); event.stopPropagation();">▶</button>`
-                    : `<button class="arrow-btn" onclick="handlePlayerMove(${index}, 1); event.stopPropagation();">◀</button>
-                       <button class="arrow-btn" onclick="handlePlayerMove(${index}, -1); event.stopPropagation();">▶</button>`;
+                // Vì người chơi luôn thấy hàng của mình ở dưới cùng, nút trái luôn tăng chiều kim đồng hồ, nút phải ngược kim đồng hồ
+                arrows.innerHTML = `<button class="arrow-btn" onclick="handlePlayerMove(${index}, 1); event.stopPropagation();">◀</button>
+                                    <button class="arrow-btn" onclick="handlePlayerMove(${index}, -1); event.stopPropagation();">▶</button>`;
                 cell.appendChild(arrows);
             }
         }
@@ -728,10 +546,7 @@
             startMove(index, direction);
         }
 
-        async function checkPauseAndCancel(moveId) {
-            while (isPaused) { if (moveId !== currentMoveId) return true; await sleep(100); }
-            return moveId !== currentMoveId;
-        }
+        async function checkPauseAndCancel(moveId) { while (isPaused) { if (moveId !== currentMoveId) return true; await sleep(100); } return moveId !== currentMoveId; }
 
         async function startMove(startIndex, direction) {
             if(isAnimating || isPaused) return;
@@ -746,7 +561,8 @@
                     curr = (curr + direction + 12) % 12;
                     await moveHandTo(curr);
                     if (await checkPauseAndCancel(myMoveId)) return null; 
-                    board[curr].dan++; count--; playDropSound(); updateBoardUI(); await sleep(550); 
+                    board[curr].dan++; count--; playDropSound(); updateBoardUI(); 
+                    await sleep(200); // TĂNG TỐC ĐỘ RẢI: 550 -> 200
                 }
                 return curr; 
             }
@@ -759,7 +575,8 @@
                 if (board[nextIndex].dan > 0) {
                     let nextStones = board[nextIndex].dan; board[nextIndex].dan = 0;
                     document.getElementById(`pit-${nextIndex}`).classList.add('cell-active'); updateBoardUI();
-                    await moveHandTo(nextIndex); if (await checkPauseAndCancel(myMoveId)) return; await sleep(600); 
+                    await moveHandTo(nextIndex); if (await checkPauseAndCancel(myMoveId)) return; 
+                    await sleep(250); // TĂNG TỐC ĐỘ LẤY QUÂN RẢI TIẾP: 600 -> 250
                     let newLastIndex = await dropStones(nextStones, nextIndex); await handlePostDrop(newLastIndex); 
                     return;
                 }
@@ -771,21 +588,22 @@
                         board[targetIndex].dan = 0; board[targetIndex].quan = 0;
                         let points = capturedDan + (capturedQuan * 10);
                         if (currentPlayer === 'p1') scores.p1 += points; else scores.p2 += points;
-                        await moveHandTo(targetIndex); playCaptureSound(); showScoreEffect(targetIndex, points); updateBoardUI(); await sleep(800); 
+                        await moveHandTo(targetIndex); playCaptureSound(); showScoreEffect(targetIndex, points); updateBoardUI(); 
+                        await sleep(400); // TĂNG TỐC ĐỘ ĂN QUÂN: 800 -> 400
                         nextIndex = (targetIndex + direction + 12) % 12; targetIndex = (nextIndex + direction + 12) % 12;
                     }
                 }
             }
 
             let initialPieces = board[startIndex].dan; board[startIndex].dan = 0; updateBoardUI();
-            await moveHandTo(startIndex); await sleep(400);
+            await moveHandTo(startIndex); await sleep(200); // TĂNG TỐC NHÚNG TAY: 400 -> 200
             let lastDropIndex = await dropStones(initialPieces, startIndex); await handlePostDrop(lastDropIndex);
             if (myMoveId !== currentMoveId) return;
 
             hand.style.display = 'none'; checkWinCondition();
             currentPlayer = currentPlayer === 'p1' ? 'p2' : 'p1'; updateTurnIndicator(); isAnimating = false;
             
-            if (gameMode === 'offline' && currentPlayer === 'p2') setTimeout(botMove, 1500);
+            if (gameMode === 'offline' && currentPlayer === 'p2') setTimeout(botMove, 800);
         }
 
         function botMove() {
@@ -795,60 +613,35 @@
 
             let chosenPit, chosenDir;
 
-            if (botDifficulty === 'easy') {
-                chosenPit = validPits[Math.floor(Math.random() * validPits.length)];
-                chosenDir = Math.random() > 0.5 ? 1 : -1;
-            } else if (botDifficulty === 'medium') {
+            if (botDifficulty === 'easy') { chosenPit = validPits[Math.floor(Math.random() * validPits.length)]; chosenDir = Math.random() > 0.5 ? 1 : -1; } 
+            else if (botDifficulty === 'medium') {
                 let bestScore = -1; chosenPit = validPits[0]; chosenDir = 1;
-                for (let pit of validPits) {
-                    for (let dir of [1, -1]) {
-                        let simScore = simulateScore(pit, dir);
-                        if (simScore > bestScore) { bestScore = simScore; chosenPit = pit; chosenDir = dir; }
-                    }
-                }
-                if (bestScore === 0 && Math.random() < 0.5) {
-                    chosenPit = validPits[Math.floor(Math.random() * validPits.length)];
-                    chosenDir = Math.random() > 0.5 ? 1 : -1;
-                }
+                for (let pit of validPits) { for (let dir of [1, -1]) { let simScore = simulateScore(pit, dir); if (simScore > bestScore) { bestScore = simScore; chosenPit = pit; chosenDir = dir; } } }
+                if (bestScore === 0 && Math.random() < 0.5) { chosenPit = validPits[Math.floor(Math.random() * validPits.length)]; chosenDir = Math.random() > 0.5 ? 1 : -1; }
             } else {
                 let bestScore = -Infinity; chosenPit = validPits[0]; chosenDir = 1;
-                for (let pit of validPits) {
-                    for (let dir of [1, -1]) {
-                        let simScore = simulateScore(pit, dir);
-                        if (simScore > bestScore) { bestScore = simScore; chosenPit = pit; chosenDir = dir; }
-                    }
-                }
+                for (let pit of validPits) { for (let dir of [1, -1]) { let simScore = simulateScore(pit, dir); if (simScore > bestScore) { bestScore = simScore; chosenPit = pit; chosenDir = dir; } } }
             }
 
             document.getElementById(`pit-${chosenPit}`).classList.add('cell-active');
-            setTimeout(() => { startMove(chosenPit, chosenDir); }, 800);
+            setTimeout(() => { startMove(chosenPit, chosenDir); }, 400);
         }
 
         function simulateScore(startIndex, direction) {
-            let b = board.map(c => ({ dan: c.dan, quan: c.quan }));
-            let count = b[startIndex].dan; b[startIndex].dan = 0;
-            let curr = startIndex;
+            let b = board.map(c => ({ dan: c.dan, quan: c.quan })); let count = b[startIndex].dan; b[startIndex].dan = 0; let curr = startIndex;
             while (count > 0) { curr = (curr + direction + 12) % 12; b[curr].dan++; count--; }
-            let earned = 0;
-            let next = (curr + direction + 12) % 12;
+            let earned = 0; let next = (curr + direction + 12) % 12;
             while (next !== 0 && next !== 6 && b[next].dan === 0) {
                 let target = (next + direction + 12) % 12;
-                if (b[target].dan > 0 || b[target].quan > 0) {
-                    earned += b[target].dan + b[target].quan * 10;
-                    b[target].dan = 0; b[target].quan = 0;
-                    next = (target + direction + 12) % 12;
-                } else break;
-            }
-            return earned;
+                if (b[target].dan > 0 || b[target].quan > 0) { earned += b[target].dan + b[target].quan * 10; b[target].dan = 0; b[target].quan = 0; next = (target + direction + 12) % 12; } else break;
+            } return earned;
         }
 
         function moveHandTo(index) {
             return new Promise(resolve => {
-                const hand = document.getElementById('hand-cursor');
-                const targetCell = document.getElementById(`pit-${index}`);
-                const rect = targetCell.getBoundingClientRect();
+                const hand = document.getElementById('hand-cursor'); const targetCell = document.getElementById(`pit-${index}`); const rect = targetCell.getBoundingClientRect();
                 hand.style.top = `${rect.top + window.scrollY - 25}px`; hand.style.left = `${rect.left + window.scrollX + (rect.width/2) - 20}px`;
-                setTimeout(resolve, 500); 
+                setTimeout(resolve, 200); // TĂNG TỐC ĐỘ DI CHUYỂN TAY: 500 -> 200
             });
         }
 
@@ -863,15 +656,10 @@
             if(board[0].quan === 0 && board[0].dan === 0 && board[6].quan === 0 && board[6].dan === 0) {
                 setTimeout(() => {
                     let result;
-                    if (gameMode === 'online') {
-                        const myScore = myRole === 'p1' ? scores.p1 : scores.p2;
-                        const oppScore = myRole === 'p1' ? scores.p2 : scores.p1;
-                        result = myScore > oppScore ? 'win' : myScore < oppScore ? 'lose' : 'draw';
-                    } else {
-                        result = scores.p1 > scores.p2 ? 'win' : scores.p1 < scores.p2 ? 'lose' : 'draw';
-                    }
+                    if (gameMode === 'online') { const myScore = myRole === 'p1' ? scores.p1 : scores.p2; const oppScore = myRole === 'p1' ? scores.p2 : scores.p1; result = myScore > oppScore ? 'win' : myScore < oppScore ? 'lose' : 'draw'; } 
+                    else { result = scores.p1 > scores.p2 ? 'win' : scores.p1 < scores.p2 ? 'lose' : 'draw'; }
                     showWinModal(result);
-                }, 800);
+                }, 500);
             }
         }
 
