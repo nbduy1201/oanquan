@@ -2,7 +2,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
-const os = require('os'); // Thêm thư viện hệ điều hành để quét IP
+const os = require('os'); 
 
 const app = express();
 const server = http.createServer(app);
@@ -10,7 +10,6 @@ const io = new Server(server);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Hàm tự động lấy IP mạng LAN (Wi-Fi)
 function getLocalIp() {
     const interfaces = os.networkInterfaces();
     for (const name of Object.keys(interfaces)) {
@@ -27,17 +26,23 @@ const rooms = {};
 
 io.on('connection', (socket) => {
     // 1. TẠO PHÒNG
-    socket.on('createRoom', (playerName) => {
-        // Tạo mã 4 số ngẫu nhiên (từ 1000 đến 9999)
+    socket.on('createRoom', (data) => {
         let roomCode = Math.floor(1000 + Math.random() * 9000).toString();
-        // Đảm bảo không trùng mã cũ
         while(rooms[roomCode]) {
             roomCode = Math.floor(1000 + Math.random() * 9000).toString();
         }
 
-        rooms[roomCode] = { 
-            p1: { id: socket.id, name: playerName || "Chủ phòng" }, 
-            p2: null 
+        // Nhận dữ liệu tạo phòng mới dạng Object
+        let capacity = data.capacity || 2;
+        let playerName = data.name || "Chủ phòng";
+        let isTimed = data.isTimed || false;
+
+        rooms[roomCode] = {
+            capacity: capacity,
+            isTimed: isTimed,
+            p1: { id: socket.id, name: playerName },
+            p2: null,
+            p3: null
         };
         socket.join(roomCode);
         socket.emit('roomCreated', roomCode);
@@ -50,14 +55,31 @@ io.on('connection', (socket) => {
 
         if (room) {
             if (!room.p2) {
-                room.p2 = { id: socket.id, name: name || "Khách" };
+                room.p2 = { id: socket.id, name: name || "Khách 1" };
                 socket.join(code);
                 socket.emit('roomJoined', 'p2');
                 
-                // Báo cho cả phòng biết game bắt đầu và gửi tên 2 người chơi
+                if (room.capacity === 2) {
+                    io.to(code).emit('gameStart', {
+                        mode: 'online',
+                        isTimed: room.isTimed,
+                        p1Name: room.p1.name,
+                        p2Name: room.p2.name
+                    });
+                } else {
+                    io.to(code).emit('roomStatus', 'Đã có 2/3 người. Chờ người thứ 3...');
+                }
+            } else if (room.capacity === 3 && !room.p3) {
+                room.p3 = { id: socket.id, name: name || "Khách 2" };
+                socket.join(code);
+                socket.emit('roomJoined', 'p3');
+                
                 io.to(code).emit('gameStart', {
+                    mode: 'online_3p',
+                    isTimed: room.isTimed,
                     p1Name: room.p1.name,
-                    p2Name: room.p2.name
+                    p2Name: room.p2.name,
+                    p3Name: room.p3.name
                 });
             } else {
                 socket.emit('roomError', 'Phòng này đã đủ người chơi!');
@@ -76,7 +98,9 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         for (const code in rooms) {
             const room = rooms[code];
-            if (room.p1 && room.p1.id === socket.id || room.p2 && room.p2.id === socket.id) {
+            if ((room.p1 && room.p1.id === socket.id) || 
+                (room.p2 && room.p2.id === socket.id) ||
+                (room.p3 && room.p3.id === socket.id)) {
                 io.to(code).emit('opponentDisconnected');
                 delete rooms[code];
             }
