@@ -390,7 +390,8 @@
             btnContainer.innerHTML = `<button onclick="backToMainMenu()" style="background:#2e7d32; border-color:#1b5e20;">🏠 Menu</button>
                                       <button onclick="restartGame()">🔄 Chơi lại</button>`;
             if (gameMode === 'campaign' && result === 'win' && currentCampaignLevel < 9) {
-                btnContainer.innerHTML += `<button onclick="startCampaignLevel(${currentCampaignLevel + 1})" style="background:#e65100; border-color:#bf360c;">⏩ Cửa tiếp</button>`;
+                // SỬA LỖI Ở ĐÂY: Thêm hideWinModal() vào nút bấm
+                btnContainer.innerHTML += `<button onclick="hideWinModal(); startCampaignLevel(${currentCampaignLevel + 1})" style="background:#e65100; border-color:#bf360c;">⏩ Cửa tiếp</button>`;
             }
             modal.style.display = 'flex';
         }
@@ -526,6 +527,7 @@
         }
 
         function startGame(mode, customBoard = null) {
+            hideWinModal(); // Bổ sung tắt modal an toàn khi bắt đầu game mới
             currentMoveId++; gameMode = mode; scores = { p1: 0, p2: 0 }; currentPlayer = 'p1'; isAnimating = false; isPaused = false; 
             document.getElementById('hand-cursor').style.display = 'none';
             document.getElementById('borrow-btn').style.display = 'none';
