@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Minigame Ô ăn quan - Thi Trạng Nguyên</title>
+    <title>Minigame Ô ăn quan - Thi trạng nguyên</title>
     <link href="https://fonts.googleapis.com/css2?family=Pattaya&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
     <style>
@@ -28,6 +28,15 @@
         @keyframes fadeInScreen { 0% { opacity: 0; transform: translateY(15px); } 100% { opacity: 1; transform: translateY(0); } }
 
         h1 { font-size: 4rem; color: #5c2c16; text-shadow: -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff, 4px 6px 10px rgba(0,0,0,0.6); margin-bottom: 20px; font-weight: bold; }
+
+        /* --- STYLING CHO TÊN TÁC GIẢ --- */
+        .author-name {
+            margin-top: 30px;
+            font-size: 1.3rem;
+            color: #5c2c16;
+            text-shadow: 1px 1px 2px #fff;
+            letter-spacing: 1px;
+        }
 
         button {
             background-color: var(--btn-bg); color: #fff; border: 2px solid var(--btn-border); border-radius: 8px;
@@ -167,10 +176,12 @@
         <button onclick="showDifficultyModal()">Chơi với máy</button>
         <button onclick="startMultiplayer()">Chơi với bạn</button>
         <button class="btn-campaign" onclick="showCampaignMenu()">Thi trạng nguyên</button>
+        
+        <div class="author-name">Tác giả: Nguyễn Bá Duy</div>
     </div>
 
     <div id="campaign-menu" class="screen">
-        <h1>Thi Trạng Nguyên</h1>
+        <h1>Thi trạng nguyên</h1>
         <div class="campaign-box">
             <p style="color: #8c5a2b; font-size: 1.2rem; margin-top: 0;">Vượt qua 9 cửa ải để đoạt bảng vàng!</p>
             <div class="campaign-grid" id="campaign-grid">
