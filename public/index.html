@@ -427,7 +427,7 @@
         let isTimedMode = false;
         let selectedChapterData = null;
 
-        function generateBoard(danCount) { return [ { quan: 1, dan: danCount }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 1, dan: danCount }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 } ]; }
+        function generateBoard(danCount) { return [ { quan: 1, dan: 0 }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 1, dan: 0 }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount } ]; }
 
         let campaignLevels = [];
         for(let i=1; i<=27; i++) {
@@ -436,9 +436,9 @@
         }
 
         const storyChapters = [
-            { id: 1, name: "Màn 1: Thuở Nhỏ Tầm Sư", desc: "Bắt đầu với những viên sỏi lề đường. Học cách giữ chữ Tín, không gian lận trong từng nước cờ.", fullStory: "Cậu bé làng quê nghèo bắt đầu học tính toán bằng những viên sỏi nhặt nơi bờ ao. Thầy đồ làng từng dạy: 'Cầm quân cờ cũng như cầm nhân cách, đi sai một bước, gian lận một viên sỏi là đánh mất một chữ Tín'. Cậu khắc ghi lời thầy, tuyệt đối không gian lận, rèn luyện sự trung thực trong từng nước cờ.", start: 1, end: 9 },
-            { id: 2, name: "Màn 2: Lều Chõng Quả Cuốn", desc: "Cọ xát chốn trường thi kỳ Hương, kỳ Hội. Rèn luyện Nghĩa Khí, đương đầu thử thách.", fullStory: "Lớn lên, chàng trai khăn gói lều chõng lên kinh ứng thí. Dọc đường gió bụi, chàng gặp vô số sĩ tử khác cũng chung chí hướng. Bàn cờ Ô ăn quan trở thành nơi kết giao bằng hữu. Chàng luôn sẵn lòng chỉ dẫn người mới, nhường bước kẻ yếu. Chữ 'Nghĩa Khí' nay đã thấm sâu vào máu thịt, biến chàng thành một kỳ thủ được mọi người nể trọng.", start: 10, end: 18 },
-            { id: 3, name: "Màn 3: Vinh Quy Bái Tổ", desc: "Sân Đình tranh tài cùng Quan Chủ Khảo. Dùng Trí Tuệ và Trách Nhiệm để giành lấy Bảng Vàng.", fullStory: "Vượt qua ngàn người ở kỳ thi Hương, thi Hội, nay chàng hiên ngang đứng trước sân Đình, đối mặt trực tiếp với Quan Chủ Khảo. Chàng thấu hiểu rằng, thi đỗ không chỉ mang lại vinh hoa cho bản thân, mà còn gánh trên vai chữ 'Trách Nhiệm' to lớn: dùng trí tuệ tính toán từng đường đi nước bước để lo cho dân, bảo vệ nước nhà.", start: 19, end: 27 }
+            { id: 1, name: "Màn 1: Thuở nhỏ tầm sư", desc: "Bắt đầu với những viên sỏi lề đường. Học cách giữ chữ Tín, không gian lận trong từng nước cờ.", fullStory: "Cậu bé làng quê nghèo bắt đầu học tính toán bằng những viên sỏi nhặt nơi bờ ao. Thầy đồ làng từng dạy: 'Cầm quân cờ cũng như cầm nhân cách, đi sai một bước, gian lận một viên sỏi là đánh mất một chữ Tín'. Cậu khắc ghi lời thầy, tuyệt đối không gian lận, rèn luyện sự trung thực trong từng nước cờ.", start: 1, end: 9 },
+            { id: 2, name: "Màn 2: Lều chõng quả cuốn", desc: "Cọ xát chốn trường thi kỳ Hương, kỳ Hội. Rèn luyện Nghĩa Khí, đương đầu thử thách.", fullStory: "Lớn lên, chàng trai khăn gói lều chõng lên kinh ứng thí. Dọc đường gió bụi, chàng gặp vô số sĩ tử khác cũng chung chí hướng. Bàn cờ Ô ăn quan trở thành nơi kết giao bằng hữu. Chàng luôn sẵn lòng chỉ dẫn người mới, nhường bước kẻ yếu. Chữ 'Nghĩa Khí' nay đã thấm sâu vào máu thịt, biến chàng thành một kỳ thủ được mọi người nể trọng.", start: 10, end: 18 },
+            { id: 3, name: "Màn 3: Vinh quy bái tổ", desc: "Sân Đình tranh tài cùng Quan Chủ Khảo. Dùng Trí Tuệ và Trách Nhiệm để giành lấy Bảng Vàng.", fullStory: "Vượt qua ngàn người ở kỳ thi Hương, thi Hội, nay chàng hiên ngang đứng trước sân Đình, đối mặt trực tiếp với Quan Chủ Khảo. Chàng thấu hiểu rằng, thi đỗ không chỉ mang lại vinh hoa cho bản thân, mà còn gánh trên vai chữ 'Trách Nhiệm' to lớn: dùng trí tuệ tính toán từng đường đi nước bước để lo cho dân, bảo vệ nước nhà.", start: 19, end: 27 }
         ];
 
         function showCampaignScreen() {
