@@ -429,12 +429,24 @@
 
         function generateBoard(danCount) { return [ { quan: 1, dan: 0 }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 1, dan: 0 }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount } ]; }
 
-        let campaignLevels = [];
+       let campaignLevels = [];
         for(let i=1; i<=27; i++) {
-            let diff = i <= 9 ? 'easy' : (i <= 18 ? 'medium' : 'hard'); let danCount = (i % 5) + 1;
+            let diff = i <= 9 ? 'easy' : (i <= 18 ? 'medium' : 'hard'); 
+            
+            // Tính thứ tự của ải hiện tại trong màn (kết quả từ 1 đến 9)
+            let levelInChapter = ((i - 1) % 9) + 1; 
+            
+            let danCount;
+            // Nếu là ải 4 trở đi của màn, random số dân từ 1 đến 5
+            if (levelInChapter >= 4) {
+                danCount = Math.floor(Math.random() * 5) + 1; 
+            } else {
+                // Mặc định chuẩn 5 dân cho các ải 1, 2, 3 của mỗi màn
+                danCount = 5; 
+            }
+            
             campaignLevels.push({ id: i, name: `Ải ${i}`, diff: diff, board: generateBoard(danCount) });
         }
-
         const storyChapters = [
             { id: 1, name: "Màn 1: Thuở nhỏ tầm sư", desc: "Bắt đầu với những viên sỏi lề đường. Học cách giữ chữ Tín, không gian lận trong từng nước cờ.", fullStory: "Cậu bé làng quê nghèo bắt đầu học tính toán bằng những viên sỏi nhặt nơi bờ ao. Thầy đồ làng từng dạy: 'Cầm quân cờ cũng như cầm nhân cách, đi sai một bước, gian lận một viên sỏi là đánh mất một chữ Tín'. Cậu khắc ghi lời thầy, tuyệt đối không gian lận, rèn luyện sự trung thực trong từng nước cờ.", start: 1, end: 9 },
             { id: 2, name: "Màn 2: Lều chõng quả cuốn", desc: "Cọ xát chốn trường thi kỳ Hương, kỳ Hội. Rèn luyện Nghĩa Khí, đương đầu thử thách.", fullStory: "Lớn lên, chàng trai khăn gói lều chõng lên kinh ứng thí. Dọc đường gió bụi, chàng gặp vô số sĩ tử khác cũng chung chí hướng. Bàn cờ Ô ăn quan trở thành nơi kết giao bằng hữu. Chàng luôn sẵn lòng chỉ dẫn người mới, nhường bước kẻ yếu. Chữ 'Nghĩa Khí' nay đã thấm sâu vào máu thịt, biến chàng thành một kỳ thủ được mọi người nể trọng.", start: 10, end: 18 },
@@ -516,8 +528,8 @@
 
         function triggerRandomSkill() {
             if (gameMode !== 'campaign' || currentPlayer !== 'p1') return;
-            // Tăng tỷ lệ rớt skill lên 35%
-            if (Math.random() < 0.35) {
+            // Tăng tỷ lệ rớt skill lên 15%
+            if (Math.random() < 0.15) {
                 const keys = Object.keys(SKILL_DATA);
                 let randomKey = keys[Math.floor(Math.random() * keys.length)];
                 let skill = SKILL_DATA[randomKey];
