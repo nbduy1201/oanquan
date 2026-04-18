@@ -490,26 +490,48 @@
         let isTimedMode = false;
         let selectedChapterData = null;
 
-        function generateBoard(danCount) { return [ { quan: 1, dan: 0 }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 1, dan: 0 }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount }, { quan: 0, dan: danCount } ]; }
+        function generateBoard(val) { 
+            // Nếu truyền vào một mảng (cho các ải random)
+            if (Array.isArray(val)) {
+                return [ 
+                    { quan: 1, dan: 0 }, 
+                    { quan: 0, dan: val[0] }, { quan: 0, dan: val[1] }, { quan: 0, dan: val[2] }, { quan: 0, dan: val[3] }, { quan: 0, dan: val[4] }, 
+                    { quan: 1, dan: 0 }, 
+                    { quan: 0, dan: val[5] }, { quan: 0, dan: val[6] }, { quan: 0, dan: val[7] }, { quan: 0, dan: val[8] }, { quan: 0, dan: val[9] } 
+                ];
+            }
+            // Nếu truyền vào một số cố định (cho ải 1, 2, 3)
+            return [ 
+                { quan: 1, dan: 0 }, 
+                { quan: 0, dan: val }, { quan: 0, dan: val }, { quan: 0, dan: val }, { quan: 0, dan: val }, { quan: 0, dan: val }, 
+                { quan: 1, dan: 0 }, 
+                { quan: 0, dan: val }, { quan: 0, dan: val }, { quan: 0, dan: val }, { quan: 0, dan: val }, { quan: 0, dan: val } 
+            ]; 
+        }
 
-       let campaignLevels = [];
+        let campaignLevels = [];
         for(let i=1; i<=27; i++) {
             let diff = i <= 9 ? 'easy' : (i <= 18 ? 'medium' : 'hard'); 
             
             // Tính thứ tự của ải hiện tại trong màn (kết quả từ 1 đến 9)
             let levelInChapter = ((i - 1) % 9) + 1; 
             
-            let danCount;
-            // Nếu là ải 4 trở đi của màn, random số dân từ 1 đến 5
+            let boardData;
+            // Nếu là ải 4 trở đi, tạo mảng 10 số ngẫu nhiên (từ 1 đến 5) cho 10 ô dân
             if (levelInChapter >= 4) {
-                danCount = Math.floor(Math.random() * 5) + 1; 
+                let randomPits = [];
+                for(let p = 0; p < 10; p++) {
+                    randomPits.push(Math.floor(Math.random() * 5) + 1); 
+                }
+                boardData = generateBoard(randomPits); 
             } else {
                 // Mặc định chuẩn 5 dân cho các ải 1, 2, 3 của mỗi màn
-                danCount = 5; 
+                boardData = generateBoard(5); 
             }
             
-            campaignLevels.push({ id: i, name: `Ải ${i}`, diff: diff, board: generateBoard(danCount) });
+            campaignLevels.push({ id: i, name: `Ải ${i}`, diff: diff, board: boardData });
         }
+      
         const storyChapters = [
             { id: 1, name: "Màn 1: Thuở nhỏ tầm sư", desc: "Bắt đầu với những viên sỏi lề đường. Học cách giữ chữ Tín, không gian lận trong từng nước cờ.", fullStory: "Cậu bé làng quê nghèo bắt đầu học tính toán bằng những viên sỏi nhặt nơi bờ ao. Thầy đồ làng từng dạy: 'Cầm quân cờ cũng như cầm nhân cách, đi sai một bước, gian lận một viên sỏi là đánh mất một chữ Tín'. Cậu khắc ghi lời thầy, tuyệt đối không gian lận, rèn luyện sự trung thực trong từng nước cờ.", start: 1, end: 9 },
             { id: 2, name: "Màn 2: Lều chõng quả cuốn", desc: "Cọ xát chốn trường thi kỳ Hương, kỳ Hội. Rèn luyện Nghĩa Khí, đương đầu thử thách.", fullStory: "Lớn lên, chàng trai khăn gói lều chõng lên kinh ứng thí. Dọc đường gió bụi, chàng gặp vô số sĩ tử khác cũng chung chí hướng. Bàn cờ Ô ăn quan trở thành nơi kết giao bằng hữu. Chàng luôn sẵn lòng chỉ dẫn người mới, nhường bước kẻ yếu. Chữ 'Nghĩa Khí' nay đã thấm sâu vào máu thịt, biến chàng thành một kỳ thủ được mọi người nể trọng.", start: 10, end: 18 },
@@ -601,6 +623,11 @@
         function closeSkillDiscovery() {
             document.getElementById('skill-discovery-modal').style.display = 'none';
             isPaused = false; 
+            
+            // Gọi bot đánh tiếp nếu đang là lượt của máy
+            if ((gameMode === 'offline' || gameMode === 'campaign') && currentPlayer === 'p2') {
+                setTimeout(botMove, 500);
+            }
         }
 
         function triggerRandomSkill() {
