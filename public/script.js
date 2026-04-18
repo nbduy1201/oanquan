@@ -306,7 +306,14 @@ if(socket) {
     socket.on('roomError', (msg) => { document.getElementById('room-status').innerText = msg; });
     socket.on('gameStart', (data) => { let p1Data = data.p1Name.split("|||"); names.p1 = p1Data[0]; isTimedMode = (p1Data[1] === "1"); names.p2 = data.p2Name; alert(`Đã kết nối! Trò chơi bắt đầu.\nChế độ: ${isTimedMode ? "CÓ TÍNH GIỜ (15s)" : "KHÔNG TÍNH GIỜ"}`); startGame('online'); });
     socket.on('receiveMove', (data) => { if (data.isBorrow) executeBorrow(data.player); else startMove(data.index, data.direction); });
-    socket.on('opponentDisconnected', () => { if (gameMode === 'online') { alert("Đối thủ đã thoát!"); window.location.reload(); } });
+    
+    // Đã thay đổi reload thành backToMainMenu
+    socket.on('opponentDisconnected', () => { 
+        if (gameMode === 'online') { 
+            alert("Đối thủ đã thoát!"); 
+            backToMainMenu(); 
+        } 
+    });
 }
 
 function startGame(mode, customBoard = null) {
@@ -476,5 +483,30 @@ function updateTurnIndicator() {
 
 function openOptions() { isPaused = true; document.getElementById('options-modal').style.display = 'flex'; }
 function closeOptions() { isPaused = false; document.getElementById('options-modal').style.display = 'none'; }
-function backToMainMenu() { stopTurnTimer(); currentMoveId++; isPaused = false; hideWinModal(); clearTimeout(botTimeoutId); window.location.reload(); }
+
+// --- THÊM MỚI: HÀM ĐIỀU HƯỚNG MỚI (Tránh tải lại trang làm mất nhạc nền) ---
+function backToMainMenu() { 
+    stopTurnTimer(); 
+    currentMoveId++; 
+    isPaused = false; 
+    hideWinModal(); 
+    clearTimeout(botTimeoutId); 
+    
+    // Gửi tín hiệu rời phòng cho server nếu đang ở chế độ Multiplayer
+    if (typeof socket !== 'undefined' && socket && currentRoom) {
+        socket.emit('leaveRoom', currentRoom);
+        currentRoom = '';
+    }
+    
+    // Đặt lại giao diện lobby Multiplayer về trạng thái ban đầu
+    const setupRoom = document.getElementById('setup-room');
+    const waitingRoom = document.getElementById('waiting-room');
+    const roomStatus = document.getElementById('room-status');
+    if (setupRoom) setupRoom.style.display = 'flex';
+    if (waitingRoom) waitingRoom.style.display = 'none';
+    if (roomStatus) roomStatus.innerText = '';
+    
+    showScreen('main-menu'); 
+}
+
 function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }

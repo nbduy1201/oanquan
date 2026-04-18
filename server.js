@@ -26,14 +26,20 @@ function getLocalIp() {
 const rooms = {};
 
 io.on('connection', (socket) => {
-    // 1. TẠO PHÒNG
+    // 1. TẠO PHÒNG (Tối ưu hóa bằng Linear Probing)
     socket.on('createRoom', (playerName) => {
-        // Tạo mã 4 số ngẫu nhiên (từ 1000 đến 9999)
-        let roomCode = Math.floor(1000 + Math.random() * 9000).toString();
-        // Đảm bảo không trùng mã cũ
-        while(rooms[roomCode]) {
-            roomCode = Math.floor(1000 + Math.random() * 9000).toString();
+        let roomCode = Math.floor(1000 + Math.random() * 9000);
+        let startCode = roomCode;
+        
+        while(rooms[roomCode.toString()]) {
+            roomCode++;
+            if (roomCode > 9999) roomCode = 1000;
+            if (roomCode === startCode) {
+                socket.emit('roomError', 'Máy chủ hiện đã đầy phòng, vui lòng thử lại sau!');
+                return;
+            }
         }
+        roomCode = roomCode.toString();
 
         rooms[roomCode] = { 
             p1: { id: socket.id, name: playerName || "Chủ phòng" }, 
@@ -72,7 +78,16 @@ io.on('connection', (socket) => {
         socket.to(data.roomCode).emit('receiveMove', data);
     });
 
-    // 4. NGẮT KẾT NỐI
+    // --- THÊM MỚI: XỬ LÝ KHI NGƯỜI CHƠI CHỦ ĐỘNG RỜI PHÒNG ---
+    socket.on('leaveRoom', (roomCode) => {
+        socket.leave(roomCode);
+        if (rooms[roomCode]) {
+            socket.to(roomCode).emit('opponentDisconnected');
+            delete rooms[roomCode];
+        }
+    });
+
+    // 4. NGẮT KẾT NỐI (Đóng tab/Mất mạng)
     socket.on('disconnect', () => {
         for (const code in rooms) {
             const room = rooms[code];

@@ -85,13 +85,13 @@
                 <input type="text" id="room-input" placeholder="Mã PIN 4 số" maxlength="4" style="width: 180px; margin-bottom: 10px;"><br>
                 <button onclick="joinRoom()" style="background-color: #2e7d32; border-color: #1b5e20;">Vào Phòng</button>
             </div>
-            <button onclick="window.location.reload()" style="background-color: #555; margin-top: 10px;">Quay về</button>
+            <button onclick="backToMainMenu()" style="background-color: #555; margin-top: 10px;">Quay về</button>
         </div>
         
         <div id="waiting-room">
             <h2>Mã phòng của bạn:</h2><div class="room-code-display" id="display-room-code">1234</div>
             <p>Hãy đọc mã này cho bạn bè nhập vào nhé!</p><p style="margin-bottom: 20px;">Đang chờ đối thủ...</p>
-            <button onclick="window.location.reload()" style="background-color: #555;">Huỷ phòng</button>
+            <button onclick="backToMainMenu()" style="background-color: #555;">Huỷ phòng</button>
         </div>
         <h2 id="room-status" style="color: #d32f2f; margin-top: 20px; text-shadow: 1px 1px 0 #fff;"></h2>
     </div>

@@ -81,54 +81,13 @@ input::placeholder { color: #a1887f; font-size: 1.2rem; letter-spacing: 0px; }
 .skill-badge { position: absolute; top: -8px; right: -8px; background: #d32f2f; color: #ffdd57; border-radius: 50%; width: 24px; height: 24px; font-size: 1rem; line-height: 24px; text-align: center; border: 2px solid #fff; font-weight: bold; font-family: sans-serif; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
 
 /* Tooltip khi rê chuột vào Kỹ Năng */
-.skill-btn .tooltip-text {
-    visibility: hidden;
-    background-color: rgba(92, 44, 22, 0.95);
-    color: #fff;
-    text-align: center;
-    border-radius: 8px;
-    padding: 8px 12px;
-    position: absolute;
-    z-index: 100;
-    bottom: 125%; 
-    left: 50%;
-    transform: translateX(-50%);
-    white-space: nowrap;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    font-size: 1rem;
-    opacity: 0;
-    transition: opacity 0.2s ease-in-out;
-    pointer-events: none;
-    border: 2px solid #dcb881;
-    text-shadow: none;
-}
-.skill-btn .tooltip-text::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: rgba(92, 44, 22, 0.95) transparent transparent transparent;
-}
-.skill-btn.has-skill:hover .tooltip-text {
-    visibility: visible;
-    opacity: 1;
-}
+.skill-btn .tooltip-text { visibility: hidden; background-color: rgba(92, 44, 22, 0.95); color: #fff; text-align: center; border-radius: 8px; padding: 8px 12px; position: absolute; z-index: 100; bottom: 125%; left: 50%; transform: translateX(-50%); white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.5); font-size: 1rem; opacity: 0; transition: opacity 0.2s ease-in-out; pointer-events: none; border: 2px solid #dcb881; text-shadow: none; }
+.skill-btn .tooltip-text::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px; border-width: 5px; border-style: solid; border-color: rgba(92, 44, 22, 0.95) transparent transparent transparent; }
+.skill-btn.has-skill:hover .tooltip-text { visibility: visible; opacity: 1; }
 
 /* Giao diện Modal giới thiệu kỹ năng lần đầu */
-#skill-discovery-modal {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 500;
-}
-.skill-discovery-box {
-    background: linear-gradient(135deg, #fff8eb 0%, #ffe0b2 100%);
-    border: 5px solid #8c5a2b; border-radius: 20px; padding: 30px;
-    text-align: center; max-width: 450px; width: 90%;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.6);
-    animation: popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
-}
+#skill-discovery-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 500; }
+.skill-discovery-box { background: linear-gradient(135deg, #fff8eb 0%, #ffe0b2 100%); border: 5px solid #8c5a2b; border-radius: 20px; padding: 30px; text-align: center; max-width: 450px; width: 90%; box-shadow: 0 15px 40px rgba(0,0,0,0.6); animation: popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275); }
 .skill-discovery-title { font-size: 2.2rem; color: #d32f2f; margin: 0 0 10px 0; text-shadow: 1px 1px 0 #fff; }
 .skill-discovery-icon { font-size: 4rem; margin: 10px 0; animation: trophyBounce 1s infinite alternate; }
 .skill-discovery-desc { font-size: 1.2rem; color: #4a2e00; margin-bottom: 25px; line-height: 1.5; font-weight: bold; }
@@ -156,12 +115,29 @@ input::placeholder { color: #a1887f; font-size: 1.2rem; letter-spacing: 0px; }
 @keyframes pulseStroke { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 @keyframes pulseText { 0% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.2); } 100% { transform: translate(-50%, -50%) scale(1); } }
 
-.board-wrapper { transform: rotateX(40deg); transform-style: preserve-3d; margin-top: -10px; }
-.board { display: flex; align-items: center; justify-content: center; background-color: var(--board-color); padding: 20px; border-radius: 80px; border: 5px solid #4a2e00; box-shadow: 0 20px 0 var(--board-side), 0 35px 20px rgba(0,0,0,0.5); position: relative; }
+/* --- CSS BÀN CỜ ĐÔI --- */
+#dual-boards-container { display: flex; flex-direction: column; align-items: center; gap: 15px; transition: all 0.4s ease; width: 100%; }
+#dual-boards-container.dual-mode { transform: scale(0.75); transform-origin: top center; margin-top: -40px; }
+
+.board-wrapper { transform: rotateX(40deg); transform-style: preserve-3d; transition: all 0.4s ease; }
+.board { display: flex; align-items: center; justify-content: center; background-color: var(--board-color); padding: 20px; border-radius: 80px; border: 5px solid #4a2e00; box-shadow: 0 20px 0 var(--board-side), 0 35px 20px rgba(0,0,0,0.5); position: relative; transition: all 0.3s ease;}
 .middle-col { display: flex; flex-direction: column; }
 .board.flipped { flex-direction: row-reverse; }
 .board.flipped .middle-col { flex-direction: column-reverse; }
 .board.flipped .dan-grid { direction: rtl; }
+
+/* Bàn đang chờ lượt */
+.board-wrapper.inactive-board { filter: opacity(0.6) grayscale(40%); pointer-events: none; transform: rotateX(40deg) scale(0.9); }
+/* Bàn đang đến lượt */
+.board-wrapper.active-board .board { box-shadow: 0 0 30px #ffdd57, 0 20px 0 var(--board-side), 0 35px 20px rgba(0,0,0,0.5); border-color: #ffdd57; }
+
+/* Hiệu ứng ô bị khóa */
+.pit-locked { filter: grayscale(80%) brightness(0.7); pointer-events: none; position: relative; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
+.pit-locked::after { content: '🔒'; position: absolute; font-size: 2.5rem; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; text-shadow: 0 2px 5px rgba(0,0,0,0.8); }
+
+/* Huy hiệu Kỳ Vương */
+.badge-kyvuong { display: inline-block; background: linear-gradient(135deg, #ffd700, #ff8c00, #ff4500); padding: 8px 20px; border-radius: 30px; color: #fff; font-family: 'Pattaya', sans-serif; font-size: 1.8rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); box-shadow: 0 5px 15px rgba(255, 215, 0, 0.6); border: 2px solid #fff; margin-top: 15px; animation: glowBadge 1.5s infinite alternate; }
+@keyframes glowBadge { 0% { transform: scale(1); box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4); } 100% { transform: scale(1.05); box-shadow: 0 5px 25px rgba(255, 215, 0, 0.9); } }
 
 .quan-cell { width: 120px; height: 200px; background-color: var(--cell-color); border-radius: 60px; border: 3px solid #5a3a1b; box-shadow: var(--cell-shadow); position: relative; margin: 0 15px; display: flex; justify-content: center; align-items: center; }
 .dan-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
@@ -221,7 +197,8 @@ input::placeholder { color: #a1887f; font-size: 1.2rem; letter-spacing: 0px; }
     h1 { font-size: 2.5rem; margin-bottom: 10px; }
     button { font-size: 1.2rem; padding: 10px 15px; }
     button, .dan-cell, .arrow-btn { touch-action: manipulation; }
-    .board-wrapper { transform: rotateX(30deg); }
+    
+    #dual-boards-container.dual-mode { transform: scale(0.5); margin-top: -15px; }
     .board { padding: 10px; border-radius: 40px; border-width: 3px; box-shadow: 0 8px 0 var(--board-side), 0 15px 10px rgba(0,0,0,0.5); }
     .quan-cell { width: 50px; height: 110px; border-radius: 25px; margin: 0 5px; border-width: 2px; }
     .dan-cell { width: 45px; height: 45px; border-width: 2px; }
@@ -250,7 +227,6 @@ input::placeholder { color: #a1887f; font-size: 1.2rem; letter-spacing: 0px; }
     .story-modal-title { font-size: 2rem; }
     .story-modal-content { font-size: 1.1rem; }
     #skill-toast { font-size: 1.2rem; padding: 10px 20px; }
-    
     .skill-btn { padding: 5px 8px; font-size: 0.9rem; margin: 3px;}
     .skill-badge { width: 20px; height: 20px; font-size: 0.8rem; line-height: 20px; top: -5px; right: -5px;}
 }
