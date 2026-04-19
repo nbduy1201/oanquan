@@ -12,10 +12,10 @@ function toggleMusic() {
     const bgm = document.getElementById('bgm-audio');
     const btn = document.getElementById('music-toggle');
     if (isMusicPlaying) {
-        bgm.pause(); btn.innerText = '🔇 Nhạc Nền: Tắt';
+        bgm.pause(); btn.innerText = '🔇 Nhạc nền: Tắt';
     } else {
-        bgm.play().then(() => { btn.innerText = '🎵 Nhạc Nền: Bật'; }).catch((err) => {
-            showSkillToast("Lỗi Nhạc Nền", "Trình duyệt đang chặn nhạc hoặc không tìm thấy file music/nhacnen.mp3!");
+        bgm.play().then(() => { btn.innerText = '🎵 Nhạc nền: Bật'; }).catch((err) => {
+            showSkillToast("Lỗi Nhạc nền", "Trình duyệt đang chặn nhạc hoặc không tìm thấy file music/nhacnen.mp3!");
         });
     }
     isMusicPlaying = !isMusicPlaying;
@@ -39,11 +39,15 @@ let fwIntervalId = null;
 function startFireworks() { fwCanvas.style.display = 'block'; animateFireworks(); launchFirework(); fwIntervalId = setInterval(launchFirework, 500); }
 function stopFireworks() { clearInterval(fwIntervalId); fwIntervalId = null; if (fwAnimId) { cancelAnimationFrame(fwAnimId); fwAnimId = null; } fwParticles = []; fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height); fwCanvas.style.display = 'none'; }
 
-// --- CỐT TRUYỆN MÀN CHƠI ---
+// --- CỐT TRUYỆN & NHIỆM VỤ CHI TIẾT ---
 let unlockedLevel = parseInt(localStorage.getItem('oanquan_unlocked_level')) || 1;
 let currentCampaignLevel = 1;
 let isTimedMode = false;
 let selectedChapterData = null;
+
+// Biến lưu trạng thái nhiệm vụ của màn chơi hiện tại
+let currentMissionPassed = false;
+let currentMissionFailed = false;
 
 function generateBoard(val) { 
     if (Array.isArray(val)) {
@@ -62,21 +66,61 @@ function generateBoard(val) {
     ]; 
 }
 
+// Xây dựng 27 Ải với nhiệm vụ độc lập và Tên Nhân Vật
 let campaignLevels = [];
 for(let i=1; i<=27; i++) {
-    let diff = i <= 9 ? 'easy' : (i <= 18 ? 'medium' : 'hard'); 
-    let levelInChapter = ((i - 1) % 9) + 1; 
-    let boardData;
-    if (levelInChapter >= 4) {
-        let randomPits = [];
-        for(let p = 0; p < 10; p++) {
-            randomPits.push(Math.floor(Math.random() * 5) + 1); 
-        }
-        boardData = generateBoard(randomPits); 
-    } else {
-        boardData = generateBoard(5); 
+    let diff = i <= 9 ? 'easy' : (i <= 18 ? 'medium' : 'hard');
+    let type = 'normal';
+    let missionText = "Chiến thắng Máy";
+    let boardData = generateBoard(5);
+    let target = 0;
+    let oppName = "Máy"; // Tên đối thủ mặc định
+
+    // --- Màn 1: Thuở nhỏ tầm sư ---
+    if (i >= 1 && i <= 3) { 
+        type = 'no_borrow'; missionText = "Chiến thắng và Không mượn dân"; 
+        oppName = "Thầy Đồ";
     }
-    campaignLevels.push({ id: i, name: `Ải ${i}`, diff: diff, board: boardData });
+    else if (i >= 4 && i <= 6) { 
+        type = 'min_score'; target = 40; missionText = "Thắng với tối thiểu 40 điểm"; 
+        boardData = generateBoard([4,6,3,7,5, 5,5,5,5,5]); 
+        oppName = "Thầy Đồ";
+    }
+    else if (i >= 7 && i <= 9) { 
+        type = 'handicap_board'; missionText = "Thắng từ thế trận bất lợi (Không có Quan)";
+        boardData = [ { quan: 1, dan: 0 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 0 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 } ];
+        oppName = "Thầy Đồ";
+    }
+    // --- Màn 2: Lều chõng quả cuốn ---
+    else if (i >= 10 && i <= 12) { 
+        type = 'score_diff'; target = 15; missionText = "Thắng cách biệt đối thủ ít nhất 15 điểm"; 
+        oppName = "Bần Nho";
+    }
+    else if (i >= 13 && i <= 15) { 
+        type = 'start_minus'; target = -10; missionText = "Thắng khi bị trừ 10 điểm từ đầu game"; 
+        oppName = "Phú Hào";
+    }
+    else if (i >= 16 && i <= 18) { 
+        type = 'short_time'; missionText = "Áp lực: Chỉ có 7 giây mỗi lượt đi"; 
+        oppName = "Gian Thương";
+    }
+    // --- Màn 3: Vinh quy bái tổ ---
+    else if (i >= 19 && i <= 21) { 
+        type = 'combo_capture'; missionText = "Thắng & Thực hiện thành công 'Ăn liên hoàn'"; 
+        oppName = "Quan Chủ Khảo";
+    }
+    else if (i >= 22 && i <= 24) { 
+        type = 'defend_quan'; missionText = "Thắng & Tuyệt đối không để mất ô Quan của mình"; 
+        oppName = "Tướng Quân";
+    }
+    else if (i >= 25 && i <= 27) { 
+        type = 'chaos_board'; target = 50; missionText = "Đình Thí: Bàn cờ hỗn loạn. Phải thắng với >= 50 điểm";
+        let randomPits = []; for(let p=0; p<10; p++) randomPits.push(Math.floor(Math.random()*8)+1);
+        boardData = generateBoard(randomPits);
+        oppName = "Đức Vua";
+    }
+
+    campaignLevels.push({ id: i, name: `Ải ${i}`, diff: diff, type: type, target: target, missionText: missionText, board: boardData, oppName: oppName });
 }
 
 const storyChapters = [
@@ -125,8 +169,17 @@ function closeStoryModal() {
 
 function backToStoryView() { document.getElementById('level-view').style.display = 'none'; document.getElementById('story-view').style.display = 'block'; showCampaignScreen(); }
 
+// Áp dụng tên Nhân Vật
 function startCampaignLevel(levelId) {
-    currentCampaignLevel = levelId; let lvl = campaignLevels[levelId - 1]; botDifficulty = lvl.diff; names.p1 = "Sĩ tử"; names.p2 = "Quan Chủ Khảo"; isTimedMode = true; 
+    currentCampaignLevel = levelId; 
+    let lvl = campaignLevels[levelId - 1]; 
+    botDifficulty = lvl.diff; 
+    
+    // Đổi tên dựa theo cốt truyện
+    names.p1 = (levelId <= 9) ? "Học trò" : "Sĩ tử"; 
+    names.p2 = lvl.oppName; 
+    
+    isTimedMode = true; 
     startGame('campaign', lvl.board);
 }
 
@@ -136,7 +189,7 @@ const SKILL_DATA = {
     diaLoi: { name: "Địa lợi", desc: "Trừ 1 dân ở tất cả các ô của đối thủ.", icon: "⛰️", effect: () => { for(let i=1; i<=5; i++) if(board[i].dan > 0) board[i].dan--; } },
     nhanHoa: { name: "Nhân hòa", desc: "Cộng ngay 10 điểm vào quỹ điểm.", icon: "🤝", effect: () => { scores.p1 += 10; } },
     locVua: { name: "Lộc vua", desc: "Phần thưởng lớn: Cộng ngay 15 điểm.", icon: "👑", effect: () => { scores.p1 += 15; } },
-    rutCui: { name: "Rút củi", desc: "Trừ 5 điểm từ quỹ điểm của Chủ Khảo.", icon: "🔥", effect: () => { scores.p2 = Math.max(0, scores.p2 - 5); } }
+    rutCui: { name: "Rút củi", desc: "Trừ 5 điểm từ quỹ điểm của đối thủ.", icon: "🔥", effect: () => { scores.p2 = Math.max(0, scores.p2 - 5); } }
 };
 
 let savedSkills = JSON.parse(localStorage.getItem('oanquan_skills')) || { thienThoi: 0, diaLoi: 0, nhanHoa: 0, locVua: 0, rutCui: 0 };
@@ -215,18 +268,22 @@ function useSkill(skillKey) {
 }
 
 // --- CÁC HÀM CƠ BẢN QUẢN LÝ TRÒ CHƠI ---
-function showWinModal(result) {
+function showWinModal(result, reason = "") {
     const modal = document.getElementById('win-modal'); const trophy = document.getElementById('win-trophy'); const title = document.getElementById('win-title'); const sub = document.getElementById('win-subtitle');
     const wc1 = document.getElementById('wcard-p1'); const wc2 = document.getElementById('wcard-p2'); const btnContainer = document.getElementById('win-btn-container');
+    const reasonDiv = document.getElementById('win-reason');
 
     document.getElementById('wname-p1').innerText = names.p1; document.getElementById('wname-p2').innerText = names.p2;
     document.getElementById('wval-p1').innerText  = scores.p1; document.getElementById('wval-p2').innerText  = scores.p2;
     wc1.classList.remove('winner'); wc2.classList.remove('winner'); stopTurnTimer(); document.getElementById('borrow-btn').style.display = 'none';
 
+    if (reason !== "") { reasonDiv.style.display = "block"; reasonDiv.innerText = `Lý do: ${reason}`; } else { reasonDiv.style.display = "none"; }
+
     if (gameMode === 'campaign') {
         let lvlName = campaignLevels[currentCampaignLevel - 1].name;
-        if (result === 'win') { trophy.innerText = '📜'; title.innerText = 'VƯỢT ẢI!'; sub.innerText = `Sĩ tử đã thành công qua: ${lvlName}`; wc1.classList.add('winner'); playWinSound(); startFireworks(); } 
-        else if (result === 'lose') { trophy.innerText = '🙇'; title.innerText = 'THI TRƯỢT!'; sub.innerText = `Quan chủ khảo đã đánh bại bạn ở: ${lvlName}`; wc2.classList.add('winner'); playLoseSound(); } 
+        // Áp dụng linh hoạt tên Người chơi (names.p1) và Tên Bot (names.p2)
+        if (result === 'win') { trophy.innerText = '📜'; title.innerText = 'VƯỢT ẢI!'; sub.innerText = `${names.p1} đã thành công qua: ${lvlName}`; wc1.classList.add('winner'); playWinSound(); startFireworks(); } 
+        else if (result === 'lose') { trophy.innerText = '🙇'; title.innerText = 'THI TRƯỢT!'; sub.innerText = `${names.p2} đã đánh bại bạn ở: ${lvlName}`; wc2.classList.add('winner'); playLoseSound(); } 
         else { trophy.innerText = '🤝'; title.innerText = 'HÒA NHAU!'; sub.innerText = 'Gần thành công rồi! Hãy ôn luyện và thi lại.'; playWinSound(); }
     } else {
         if (result === 'win') { trophy.innerText = '🏆'; title.innerText = 'CHIẾN THẮNG!'; sub.innerText = 'Xuất sắc lắm! Bạn đã thắng!'; if (gameMode === 'online') { if (myRole === 'p1') wc1.classList.add('winner'); else wc2.classList.add('winner'); } else { wc1.classList.add('winner'); } playWinSound(); startFireworks(); } 
@@ -248,7 +305,7 @@ function restartGame() { hideWinModal(); if (gameMode === 'campaign') { startCam
 const socket = typeof io !== 'undefined' ? io() : null; let gameMode = 'offline'; let myRole = 'p1'; let currentRoom = ''; let names = { p1: "Bạn", p2: "Máy" }; let botDifficulty = 'easy';
 
 let board = []; let scores = { p1: 0, p2: 0 }; let currentPlayer = 'p1'; let isAnimating = false; let isPaused = false; let currentMoveId = 0; 
-const TURN_TIME_LIMIT = 15; let currentTimer = 0; let timerInterval = null;
+let turnTimeLimit = 15; let currentTimer = 0; let timerInterval = null;
 let botTimeoutId = null;
 
 function showDifficultyModal() { document.getElementById('difficulty-modal').style.display = 'flex'; }
@@ -258,13 +315,13 @@ function startOfflineGame(difficulty) { botDifficulty = difficulty; isTimedMode 
 function startTurnTimer() {
     stopTurnTimer();
     if (!isTimedMode || (gameMode === 'online' && currentPlayer !== myRole) || ((gameMode === 'offline' || gameMode === 'campaign') && currentPlayer !== 'p1')) { document.getElementById('timer-container').style.display = 'none'; return; }
-    document.getElementById('timer-container').style.display = 'block'; currentTimer = TURN_TIME_LIMIT; updateTimerUI();
+    document.getElementById('timer-container').style.display = 'block'; currentTimer = turnTimeLimit; updateTimerUI();
     timerInterval = setInterval(() => { if (isPaused || isAnimating) return; currentTimer--; updateTimerUI(); if (currentTimer <= 0) { stopTurnTimer(); handleTimeoutForceMove(); } }, 1000);
 }
 
 function updateTimerUI() {
     const path = document.getElementById('timer-path'); const text = document.getElementById('timer-text'); const container = document.getElementById('timer-container');
-    text.innerText = currentTimer; const percentage = (currentTimer / TURN_TIME_LIMIT) * 100; path.style.strokeDasharray = `${percentage}, 100`;
+    text.innerText = currentTimer; const percentage = (currentTimer / turnTimeLimit) * 100; path.style.strokeDasharray = `${percentage}, 100`;
     if (currentTimer <= 5) container.classList.add('timer-warning'); else container.classList.remove('timer-warning');
 }
 
@@ -287,7 +344,15 @@ function checkBorrowCondition() {
     else { if (currentPlayer === 'p1') { if ([7,8,9,10,11].every(i => board[i].dan === 0)) document.getElementById('borrow-btn').style.display = 'inline-block'; } }
 }
 
-function borrowStones() { document.getElementById('borrow-btn').style.display = 'none'; if (gameMode === 'online') { socket.emit('makeMove', { roomCode: currentRoom, isBorrow: true, player: currentPlayer }); } executeBorrow(currentPlayer); }
+function borrowStones() { 
+    document.getElementById('borrow-btn').style.display = 'none'; 
+    if (gameMode === 'campaign' && campaignLevels[currentCampaignLevel - 1].type === 'no_borrow') {
+        currentMissionFailed = true;
+        showSkillToast("Cảnh báo!", "Bạn đã mượn dân! Khảo thí sẽ đánh trượt bạn ở cuối ván.");
+    }
+    if (gameMode === 'online') { socket.emit('makeMove', { roomCode: currentRoom, isBorrow: true, player: currentPlayer }); } 
+    executeBorrow(currentPlayer); 
+}
 
 function executeBorrow(player) {
     if (player === 'p1') { scores.p1 -= 5; for(let i=7; i<=11; i++) board[i].dan++; } 
@@ -306,27 +371,33 @@ if(socket) {
     socket.on('roomError', (msg) => { document.getElementById('room-status').innerText = msg; });
     socket.on('gameStart', (data) => { let p1Data = data.p1Name.split("|||"); names.p1 = p1Data[0]; isTimedMode = (p1Data[1] === "1"); names.p2 = data.p2Name; alert(`Đã kết nối! Trò chơi bắt đầu.\nChế độ: ${isTimedMode ? "CÓ TÍNH GIỜ (15s)" : "KHÔNG TÍNH GIỜ"}`); startGame('online'); });
     socket.on('receiveMove', (data) => { if (data.isBorrow) executeBorrow(data.player); else startMove(data.index, data.direction); });
-    
-    // Đã thay đổi reload thành backToMainMenu
-    socket.on('opponentDisconnected', () => { 
-        if (gameMode === 'online') { 
-            alert("Đối thủ đã thoát!"); 
-            backToMainMenu(); 
-        } 
-    });
+    socket.on('opponentDisconnected', () => { if (gameMode === 'online') { alert("Đối thủ đã thoát!"); backToMainMenu(); } });
 }
 
 function startGame(mode, customBoard = null) {
     hideWinModal(); currentMoveId++; gameMode = mode; scores = { p1: 0, p2: 0 }; currentPlayer = 'p1'; isAnimating = false; isPaused = false; 
     document.getElementById('hand-cursor').style.display = 'none'; document.getElementById('borrow-btn').style.display = 'none'; stopTurnTimer(); clearTimeout(botTimeoutId);
-    if(mode === 'offline') { names.p1 = "Bạn"; names.p2 = "Máy"; }
+    if(mode === 'offline') { names.p1 = "Bạn"; names.p2 = "Máy"; turnTimeLimit = 15; document.getElementById('mission-banner').style.display = 'none'; }
+    
+    // Thiết lập riêng cho Campaign
+    if (gameMode === 'campaign') {
+        let lvl = campaignLevels[currentCampaignLevel - 1];
+        turnTimeLimit = (lvl.type === 'short_time') ? 7 : 15;
+        document.getElementById('mission-banner').style.display = 'block';
+        document.getElementById('mission-text').innerText = lvl.missionText;
+        currentMissionPassed = false; currentMissionFailed = false;
+        if (lvl.type === 'start_minus') scores.p1 = -10;
+    } else {
+        document.getElementById('mission-banner').style.display = 'none';
+        turnTimeLimit = 15;
+    }
+
     if (gameMode === 'online' && myRole === 'p2') { document.getElementById('board-ui').classList.add('flipped'); } else { document.getElementById('board-ui').classList.remove('flipped'); }
     if (customBoard) { board = JSON.parse(JSON.stringify(customBoard)); } 
     else { board = [ { quan: 1, dan: 0 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 1, dan: 0 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 }, { quan: 0, dan: 5 } ]; }
     for (let i = 0; i < 12; i++) document.getElementById(`pit-${i}`).innerHTML = '';
     
-    updateSkillUI();
-    closeOptions(); showScreen('game-screen'); updateBoardUI(); updateTurnIndicator();
+    updateSkillUI(); closeOptions(); showScreen('game-screen'); updateBoardUI(); updateTurnIndicator();
 }
 
 function updateBoardUI() {
@@ -351,6 +422,14 @@ function updateBoardUI() {
         let countBadge = cell.querySelector('.count-badge'); let totalValue = board[i].dan + (board[i].quan * 10);
         if (totalValue > 0) { if (!countBadge) { countBadge = document.createElement('div'); countBadge.className = 'count-badge'; cell.appendChild(countBadge); } countBadge.innerText = totalValue; cell.appendChild(countBadge); } else if (countBadge) countBadge.remove();
     }
+
+    // Check nhiệm vụ bảo vệ Quan
+    if (gameMode === 'campaign' && campaignLevels[currentCampaignLevel - 1].type === 'defend_quan') {
+        if (board[6].quan === 0 && board[6].dan === 0 && !currentMissionFailed) { 
+            currentMissionFailed = true; 
+            showSkillToast("Mất ô Quan", "Nhiệm vụ thất bại! Khảo thí sẽ đánh trượt ở cuối ván.");
+        }
+    }
 }
 
 function selectPit(index) {
@@ -373,6 +452,8 @@ async function startMove(startIndex, direction) {
     if(isAnimating || isPaused) return;
     isAnimating = true; stopTurnTimer(); document.getElementById('borrow-btn').style.display = 'none';
     currentMoveId++; let myMoveId = currentMoveId; updateBoardUI(); const hand = document.getElementById('hand-cursor'); hand.style.display = 'block';
+
+    let localCombo = 0; // Biến cờ tính Liên hoàn
 
     async function dropStones(count, currentIndex) {
         let curr = currentIndex;
@@ -399,7 +480,16 @@ async function startMove(startIndex, direction) {
                 if (await checkPauseAndCancel(myMoveId)) return;
                 let capturedDan = board[targetIndex].dan; let capturedQuan = board[targetIndex].quan;
                 board[targetIndex].dan = 0; board[targetIndex].quan = 0; let points = capturedDan + (capturedQuan * 10);
-                if (currentPlayer === 'p1') scores.p1 += points; else scores.p2 += points;
+                
+                if (currentPlayer === 'p1') { 
+                    scores.p1 += points; localCombo++; 
+                    // Check nhiệm vụ liên hoàn
+                    if (gameMode === 'campaign' && campaignLevels[currentCampaignLevel-1].type === 'combo_capture' && localCombo >= 2 && !currentMissionPassed) {
+                        currentMissionPassed = true; showSkillToast("Tuyệt kỹ!", "Đã đạt mốc Ăn Liên Hoàn!");
+                    }
+                } 
+                else scores.p2 += points;
+                
                 await moveHandTo(targetIndex); playCaptureSound(); showScoreEffect(targetIndex, points); updateBoardUI(); await sleep(400); 
                 nextIndex = (targetIndex + direction + 12) % 12; targetIndex = (nextIndex + direction + 12) % 12;
             }
@@ -467,46 +557,107 @@ function checkWinCondition() {
         updateBoardUI();
 
         setTimeout(() => {
-            let result; if (gameMode === 'online') { const myScore = myRole === 'p1' ? scores.p1 : scores.p2; const oppScore = myRole === 'p1' ? scores.p2 : scores.p1; result = myScore > oppScore ? 'win' : myScore < oppScore ? 'lose' : 'draw'; } else { result = scores.p1 > scores.p2 ? 'win' : scores.p1 < scores.p2 ? 'lose' : 'draw'; }
-            if (gameMode === 'campaign' && result === 'win') { if (currentCampaignLevel === unlockedLevel && unlockedLevel < 27) { unlockedLevel++; localStorage.setItem('oanquan_unlocked_level', unlockedLevel); } } showWinModal(result);
+            let result; let reason = "";
+            let myScore = gameMode === 'online' && myRole === 'p2' ? scores.p2 : scores.p1;
+            let oppScore = gameMode === 'online' && myRole === 'p2' ? scores.p1 : scores.p2;
+
+            if (gameMode === 'campaign') {
+                let lvl = campaignLevels[currentCampaignLevel - 1];
+                if (myScore <= oppScore) { result = 'lose'; reason = "Điểm của bạn thấp hơn hoặc bằng đối thủ."; }
+                else if (lvl.type === 'no_borrow' && currentMissionFailed) { result = 'lose'; reason = "Bạn đã vi phạm: Mượn dân."; }
+                else if (lvl.type === 'min_score' && myScore < lvl.target) { result = 'lose'; reason = `Chưa đạt đủ ${lvl.target} điểm.`; }
+                else if (lvl.type === 'score_diff' && (myScore - oppScore) < lvl.target) { result = 'lose'; reason = `Chưa thắng cách biệt ${lvl.target} điểm.`; }
+                else if (lvl.type === 'combo_capture' && !currentMissionPassed) { result = 'lose'; reason = "Chưa thực hiện được Ăn Liên Hoàn."; }
+                else if (lvl.type === 'defend_quan' && currentMissionFailed) { result = 'lose'; reason = "Bạn đã để mất ô Quan."; }
+                else if (lvl.type === 'chaos_board' && myScore < lvl.target) { result = 'lose'; reason = `Chưa đạt đủ ${lvl.target} điểm.`; }
+                else { 
+                    result = 'win'; 
+                    if (currentCampaignLevel === unlockedLevel && unlockedLevel < 27) { 
+                        unlockedLevel++; localStorage.setItem('oanquan_unlocked_level', unlockedLevel); 
+                    } 
+                }
+            } else {
+                result = myScore > oppScore ? 'win' : myScore < oppScore ? 'lose' : 'draw';
+            }
+            
+            showWinModal(result, reason);
         }, 500);
     }
 }
 
+// Cập nhật tên của lượt đi
 function updateTurnIndicator() {
     const indicator = document.getElementById('turn-indicator');
-    if (gameMode === 'online') { if (currentPlayer === myRole) { indicator.innerText = "Lượt của Bạn!"; indicator.style.color = "#2e7d32"; } else { indicator.innerText = `Lượt của ${currentPlayer === 'p1' ? names.p1 : names.p2}...`; indicator.style.color = "#c62828"; } } 
-    else if (gameMode === 'campaign') { if (currentPlayer === 'p1') { indicator.innerText = "Sĩ tử xuất chiêu!"; indicator.style.color = "#2e7d32"; } else { indicator.innerText = "Chủ khảo đang rải..."; indicator.style.color = "#c62828"; } } 
-    else { if (currentPlayer === 'p1') { indicator.innerText = "Lượt của Bạn!"; indicator.style.color = "#2e7d32"; } else { indicator.innerText = "Máy đang rải quân..."; indicator.style.color = "#c62828"; } }
+    if (gameMode === 'online') { 
+        if (currentPlayer === myRole) { indicator.innerText = "Lượt của Bạn!"; indicator.style.color = "#2e7d32"; } 
+        else { indicator.innerText = `Lượt của ${currentPlayer === 'p1' ? names.p1 : names.p2}...`; indicator.style.color = "#c62828"; } 
+    } 
+    else if (gameMode === 'campaign') { 
+        if (currentPlayer === 'p1') { indicator.innerText = `${names.p1} xuất chiêu!`; indicator.style.color = "#2e7d32"; } 
+        else { indicator.innerText = `${names.p2} đang rải...`; indicator.style.color = "#c62828"; } 
+    } 
+    else { 
+        if (currentPlayer === 'p1') { indicator.innerText = "Lượt của Bạn!"; indicator.style.color = "#2e7d32"; } 
+        else { indicator.innerText = "Máy đang rải quân..."; indicator.style.color = "#c62828"; } 
+    }
     startTurnTimer(); checkBorrowCondition(); 
 }
 
 function openOptions() { isPaused = true; document.getElementById('options-modal').style.display = 'flex'; }
 function closeOptions() { isPaused = false; document.getElementById('options-modal').style.display = 'none'; }
-
-// --- THÊM MỚI: HÀM ĐIỀU HƯỚNG MỚI (Tránh tải lại trang làm mất nhạc nền) ---
 function backToMainMenu() { 
-    stopTurnTimer(); 
-    currentMoveId++; 
-    isPaused = false; 
-    hideWinModal(); 
-    clearTimeout(botTimeoutId); 
-    
-    // Gửi tín hiệu rời phòng cho server nếu đang ở chế độ Multiplayer
-    if (typeof socket !== 'undefined' && socket && currentRoom) {
-        socket.emit('leaveRoom', currentRoom);
-        currentRoom = '';
-    }
-    
-    // Đặt lại giao diện lobby Multiplayer về trạng thái ban đầu
-    const setupRoom = document.getElementById('setup-room');
-    const waitingRoom = document.getElementById('waiting-room');
-    const roomStatus = document.getElementById('room-status');
-    if (setupRoom) setupRoom.style.display = 'flex';
-    if (waitingRoom) waitingRoom.style.display = 'none';
-    if (roomStatus) roomStatus.innerText = '';
-    
+    stopTurnTimer(); currentMoveId++; isPaused = false; hideWinModal(); clearTimeout(botTimeoutId); 
+    if (typeof socket !== 'undefined' && socket && currentRoom) { socket.emit('leaveRoom', currentRoom); currentRoom = ''; }
+    const setupRoom = document.getElementById('setup-room'); const waitingRoom = document.getElementById('waiting-room'); const roomStatus = document.getElementById('room-status');
+    if (setupRoom) setupRoom.style.display = 'flex'; if (waitingRoom) waitingRoom.style.display = 'none'; if (roomStatus) roomStatus.innerText = '';
     showScreen('main-menu'); 
 }
-
 function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+// =========================================
+// HỆ THỐNG CẨM NANG HƯỚNG DẪN (GUIDE MODAL)
+// =========================================
+
+function openGuideModal() {
+    // Nếu đang trong trận, tạm dừng game
+    if (document.getElementById('game-screen').classList.contains('active')) {
+        isPaused = true;
+    }
+    document.getElementById('guide-modal').style.display = 'flex';
+}
+
+function closeGuideModal() {
+    document.getElementById('guide-modal').style.display = 'none';
+    
+    // Nếu đóng hướng dẫn mà đang trong trận đấu, và KHÔNG bật tab Options/Skill discovery
+    if (document.getElementById('game-screen').classList.contains('active') && 
+        document.getElementById('options-modal').style.display !== 'flex' &&
+        document.getElementById('skill-discovery-modal').style.display !== 'flex') {
+        
+        isPaused = false; 
+        // Đánh thức Bot nếu đang tới lượt Bot
+        if ((gameMode === 'offline' || gameMode === 'campaign') && currentPlayer === 'p2') {
+            clearTimeout(botTimeoutId);
+            botTimeoutId = setTimeout(botMove, 500);
+        }
+    }
+}
+
+function switchGuideTab(tabId) {
+    // Tắt tất cả tab content
+    document.querySelectorAll('.guide-tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    // Tắt màu nổi của tất cả nút tab
+    document.querySelectorAll('.guide-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Bật tab được chọn
+    document.getElementById(tabId).classList.add('active');
+    if (tabId === 'tab-rules') {
+        document.getElementById('btn-tab-rules').classList.add('active');
+    } else {
+        document.getElementById('btn-tab-story').classList.add('active');
+    }
+}

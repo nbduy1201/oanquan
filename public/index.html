@@ -12,7 +12,63 @@
     <audio id="bgm-audio" loop>
         <source src="music/nhacnen.mp3" type="audio/mpeg">
     </audio>
-    <button id="music-toggle" class="music-btn" onclick="toggleMusic()">🔇 Nhạc Nền: Tắt</button>
+    <button id="music-toggle" class="music-btn" onclick="toggleMusic()">🔇 Nhạc nền: Tắt</button>
+
+    <button id="guide-btn" class="floating-guide-btn" onclick="openGuideModal()">Hướng dẫn</button>
+
+    <div id="guide-modal" class="guide-modal-overlay">
+        <div class="guide-modal-box">
+            <button class="close-guide-btn" onclick="closeGuideModal()">✖</button>
+            <div class="guide-tabs">
+                <button id="btn-tab-rules" class="guide-tab-btn active" onclick="switchGuideTab('tab-rules')">Luật chơi</button>
+                <button id="btn-tab-story" class="guide-tab-btn" onclick="switchGuideTab('tab-story')">Cốt truyện & Nhiệm vụ</button>
+            </div>
+            
+            <div class="guide-content-wrapper">
+                <div id="tab-rules" class="guide-tab-content active">
+                    <h3 style="color: #d32f2f; margin-top: 0; border-bottom: 2px dashed #8c5a2b; padding-bottom: 10px;">Cách chơi Ô ăn quan cơ bản</h3>
+                    <ul>
+                        <li><b>Bàn cờ:</b> Gồm 10 ô dân (mỗi bên 5 ô) và 2 ô Quan lớn ở hai đầu. Mỗi ô dân ban đầu có 5 viên sỏi, ô Quan có 1 viên Quan lớn.</li>
+                        <li><b>Cách rải quân:</b> Khi đến lượt, chọn 1 ô dân của mình có sỏi, chọn hướng rải (trái/phải). Sỏi sẽ được rải lần lượt mỗi ô 1 viên.</li>
+                        <li><b>Ăn quân:</b> Khi rải viên sỏi cuối cùng xong, nếu liền kề là một ô trống, sau đó là một ô có sỏi, bạn sẽ được "Ăn" toàn bộ sỏi ở ô đó. Có thể ăn liên hoàn nếu tiếp tục là 1 ô trống rồi 1 ô có sỏi.</li>
+                        <li><b>Mất lượt:</b> Nếu viên sỏi cuối cùng rơi vào ô Quan, hoặc liền kề là 2 ô trống, bạn bị mất lượt.</li>
+                        <li><b>Mượn dân:</b> Nếu đến lượt mà 5 ô dân của bạn đều trống, bạn phải "Mượn 5 dân" (bị trừ 5 điểm) để rải vào 5 ô và tiếp tục chơi.</li>
+                        <li><b>Kết thúc:</b> Trò chơi kết thúc khi cả 2 ô Quan đều bị ăn hết. Ai có tổng điểm (Sỏi = 1đ, Quan = 10đ) cao hơn sẽ thắng!</li>
+                    </ul>
+                </div>
+
+                <div id="tab-story" class="guide-tab-content">
+                    <h3 style="color: #d32f2f; margin-top: 0;">1. Màn 1: Thuở nhỏ tầm sư (Ải 1 - 9)</h3>
+                    <p><b>Cốt truyện:</b> Cậu bé học trò bắt đầu những bài học vỡ lòng dưới mái tranh nghèo của Thầy Đồ làng. Thầy không dạy đếm số trước, mà dạy cách cầm viên sỏi sao cho ngay ngắn. Thầy dặn: <i>"Viên sỏi nhỏ xíu nhưng nặng tình người, đi sai một bước, gian lận một viên là vứt bỏ chữ Tín của bậc quân tử"</i>. Cậu bé phải vượt qua bài kiểm tra của Thầy để chứng minh mình đủ kiên nhẫn và trung thực trước khi được trao cho bàn cờ thật.</p>
+                    <p><b>Hệ thống nhiệm vụ (Đạo đức & Nền tảng):</b></p>
+                    <ul>
+                        <li><b>Ải 1-3 (Bài học Vỡ lòng):</b> Phải thắng mà <b>không được dùng quyền "Mượn 5 dân"</b>. Rèn luyện tính tự lập.</li>
+                        <li><b>Ải 4-6 (Thử thách Kiên nhẫn):</b> Phải tích lũy đủ <b>40 điểm</b> mới qua ải. Dạy sự nhẫn nại, thu thập tối đa giá trị.</li>
+                        <li><b>Ải 7-9 (Khảo thí Sân đình):</b> Bàn cờ bắt đầu với thế trận bất lợi (Ô Quan của bạn không có dân). Phải lật ngược thế cờ để thắng.</li>
+                        <li><b>Phần thưởng:</b> Mở khóa hệ thống "Tuyệt Kỹ" (Túi gấm).</li>
+                    </ul>
+
+                    <h3 style="color: #d32f2f; margin-top: 20px; border-top: 2px dashed #8c5a2b; padding-top: 15px;">2. Màn 2: Lều chõng quả cuốn (Ải 10 - 18)</h3>
+                    <p><b>Cốt truyện:</b> Khăn gói lên kinh, đường đi gian nan trắc trở. Chàng sĩ tử trẻ gặp đủ hạng người: bần nho tài năng nhưng thiếu may mắn, phú hào kiêu ngạo dùng tiền mua điểm, và cả kẻ gian thương chiêu trò. Giao đấu lúc này là để rèn luyện Nghĩa Khí, bảo vệ kẻ yếu và trừng trị kẻ gian.</p>
+                    <p><b>Hệ thống nhiệm vụ (Xử lý tình huống):</b></p>
+                    <ul>
+                        <li><b>Ải 10-12 (Giúp đỡ Bần Nho):</b> Thắng với <b>cách biệt ít nhất 15 điểm</b>. Trí tuệ áp đảo để đối thủ tâm phục.</li>
+                        <li><b>Ải 13-15 (Chạm trán Phú Hào):</b> Vượt ải khi <b>bị trừ 10 điểm</b> ngay từ đầu ván. Không nao núng trước thua thiệt.</li>
+                        <li><b>Ải 16-18 (Đấu trí Gian Thương):</b> Chế độ Sinh tử - <b>Thời gian chỉ còn 7 giây/lượt</b>. Mô phỏng áp lực phòng thi.</li>
+                    </ul>
+
+                    <h3 style="color: #d32f2f; margin-top: 20px; border-top: 2px dashed #8c5a2b; padding-top: 15px;">3. Màn 3: Vinh quy bái tổ (Ải 19 - 27)</h3>
+                    <p><b>Cốt truyện:</b> Bước qua rèm châu, đối mặt Quan Chủ Khảo và Đức Vua. Bàn cờ là mô hình thu nhỏ của giang sơn. Phân bổ quân dân là cách điều binh khiển tướng. Thi đỗ để chứng minh Trí Tuệ và Trách Nhiệm gánh vác non sông.</p>
+                    <p><b>Hệ thống nhiệm vụ (Chiến thuật bậc cao):</b></p>
+                    <ul>
+                        <li><b>Ải 19-21 (Đề thi Chủ Khảo):</b> Phải thực hiện được ít nhất một cú <b>"Ăn liên hoàn"</b>. Yêu cầu tầm nhìn chiến lược 3-4 bước.</li>
+                        <li><b>Ải 22-24 (Thử thách Tướng Quân):</b> Tuyệt đối <b>không để mất ô Quan</b> của mình. Bài học phòng thủ thành trì.</li>
+                        <li><b>Ải 25-27 (Đình Thí - Trạng Nguyên):</b> Bàn cờ siêu dị (Sỏi ngẫu nhiên, phá vỡ quy tắc). Phải thắng với <b>trên 50 điểm</b> để giành Bảng Vàng!</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div id="skill-toast">
         <b id="skill-name">Tuyệt Kỹ!</b><br>
@@ -116,6 +172,9 @@
     </div>
 
     <div id="game-screen" class="screen">
+        <div id="mission-banner" class="mission-banner">
+            🎯 <b>Nhiệm vụ:</b> <span id="mission-text">Chiến thắng</span>
+        </div>
         <div class="game-container">
             <div class="top-bar">
                 <button onclick="backToMainMenu()">Thoát</button>
@@ -169,7 +228,10 @@
 
     <div id="win-modal">
         <div class="win-box">
-            <span class="win-trophy" id="win-trophy">🏆</span><div class="win-title" id="win-title">CHIẾN THẮNG!</div><div class="win-subtitle" id="win-subtitle">Xuất sắc lắm!</div>
+            <span class="win-trophy" id="win-trophy">🏆</span>
+            <div class="win-title" id="win-title">CHIẾN THẮNG!</div>
+            <div class="win-subtitle" id="win-subtitle">Xuất sắc lắm!</div>
+            <div id="win-reason" style="color: #b71c1c; font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; display: none;">Lý do thất bại</div>
             <div class="win-scores">
                 <div class="win-score-card" id="wcard-p1"><div class="wsname" id="wname-p1">Bạn</div><div class="wsval" id="wval-p1">0</div></div>
                 <div class="win-score-card" id="wcard-p2"><div class="wsname" id="wname-p2">Máy</div><div class="wsval" id="wval-p2">0</div></div>
